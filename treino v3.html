@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Treino</title>
+<style>
+/* ── TOKENS ── */
+:root {
+  --bg:        #F0F4F8;
+  --surface:   #FFFFFF;
+  --panel:     #F7F9FC;
+  --border:    #DDE3ED;
+  --navy:      #1A2B4A;
+  --navy2:     #243660;
+  --navy3:     #2E4480;
+  --blue:      #3A6FD8;
+  --blue-lt:   #EBF2FF;
+  --teal:      #1AA8C0;
+  --teal-lt:   #E6F7FA;
+  --green:     #18A058;
+  --green-lt:  #E6F7EE;
+  --orange:    #E07820;
+  --orange-lt: #FFF3E6;
+  --red:       #D63030;
+  --red-lt:    #FDEAEA;
+  --text:      #1A2B4A;
+  --sub:       #5A6B88;
+  --muted:     #8A9BB8;
+  --radius:    12px;
+  --tab-h:     58px;
+  --top-h:     56px;
+  --shadow:    0 2px 12px rgba(26,43,74,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:-apple-system,'Segoe UI',sans-serif;color:var(--text);font-size:15px;line-height:1.5}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:15px;color:var(--text);background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;width:100%;outline:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+input[type=number]{-moz-appearance:textfield}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}
+select option{background:var(--surface)}
+h2{font-size:1rem;font-weight:700;color:var(--navy)}
+h3{font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+
+/* ── LAYOUT ── */
+#app{display:flex;flex-direction:column;height:100%}
+#screen-area{flex:1;overflow-y:auto;overflow-x:hidden}
+.screen{display:none;min-height:100%}
+.screen.active{display:block}
+.scroll-body{padding:12px 14px 90px}
+
+/* ── TOPBAR ── */
+#topbar{height:var(--top-h);display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--navy);position:sticky;top:0;z-index:30}
+#topbar .t-title{font-size:1rem;font-weight:700;color:#fff;letter-spacing:.01em}
+#topbar .t-sub{font-size:.75rem;color:rgba(255,255,255,.55);margin-top:1px}
+#topbar .t-right{display:flex;gap:8px;align-items:center}
+.top-btn{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,.12);color:#fff}
+
+/* ── TABBAR ── */
+#tabbar{height:var(--tab-h);display:flex;background:var(--surface);border-top:1.5px solid var(--border);position:sticky;bottom:0;z-index:30}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);transition:color .15s;padding:6px 0}
+.tab.active{color:var(--blue)}
+.tab svg{width:22px;height:22px}
+.tab .tab-dot{width:5px;height:5px;border-radius:50%;background:var(--blue);margin-top:1px;display:none}
+.tab.active .tab-dot{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border-radius:var(--radius);border:1.5px solid var(--border);box-shadow:var(--shadow);overflow:hidden;margin-bottom:10px}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:13px 14px;border-bottom:1.5px solid var(--border);background:var(--panel)}
+.card-body{padding:13px 14px}
+.section-label{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:18px 0 7px}
+
+/* ── BUTTONS ── */
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 18px;border-radius:10px;font-size:.9rem;font-weight:700;transition:opacity .15s,transform .1s;width:100%}
+.btn:active{transform:scale(.97);opacity:.85}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-navy{background:var(--navy);color:#fff}
+.btn-secondary{background:var(--panel);color:var(--navy);border:1.5px solid var(--border)}
+.btn-ghost{color:var(--sub);padding:8px 12px;font-size:.85rem;width:auto}
+.btn-danger{background:var(--red-lt);color:var(--red);border:1.5px solid #f5c0c0}
+.btn-sm{padding:7px 12px;font-size:.8rem;border-radius:8px;width:auto}
+.btn-icon{width:32px;height:32px;padding:0;border-radius:8px;background:var(--panel);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--sub)}
+.btn-teal{background:var(--teal);color:#fff}
+
+/* ── FORM ── */
+.form-row{display:flex;gap:8px;align-items:flex-end}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-size:.75rem;color:var(--sub);font-weight:700;letter-spacing:.04em}
+.form-group.flex1{flex:1}
+.form-group.flex2{flex:2}
+.gap12{display:flex;flex-direction:column;gap:12px}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:700;letter-spacing:.04em}
+.badge-blue{background:var(--blue-lt);color:var(--blue)}
+.badge-teal{background:var(--teal-lt);color:var(--teal)}
+.badge-green{background:var(--green-lt);color:var(--green)}
+.badge-orange{background:var(--orange-lt);color:var(--orange)}
+.badge-muted{background:var(--panel);color:var(--muted);border:1px solid var(--border)}
+.badge-red{background:var(--red-lt);color:var(--red)}
+
+/* ── LIST ITEMS ── */
+.li{display:flex;align-items:center;gap:11px;padding:12px 14px;border-bottom:1.5px solid var(--border)}
+.li:last-child{border-bottom:none}
+.li-icon{width:36px;height:36px;border-radius:10px;background:var(--blue-lt);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:15px}
+.li-body{flex:1;min-width:0}
+.li-title{font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--navy)}
+.li-sub{font-size:.75rem;color:var(--sub);margin-top:1px}
+.li-right{text-align:right;flex-shrink:0}
+
+/* ── STAT GRID ── */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}
+.stat-val{font-size:1.7rem;font-weight:800;line-height:1;color:var(--navy)}
+.stat-val span{font-size:.85rem;color:var(--sub);font-weight:500}
+.stat-label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:4px}
+.stat-delta{font-size:.75rem;font-weight:700;margin-top:3px}
+.stat-delta.up{color:var(--green)}
+.stat-delta.dn{color:var(--red)}
+.stat-delta.flat{color:var(--muted)}
+
+/* ── CHIPS ── */
+.chip-row{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:5px 12px;border-radius:20px;font-size:.78rem;font-weight:600;background:var(--panel);border:1.5px solid var(--border);color:var(--sub);cursor:pointer;transition:all .15s}
+.chip.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+
+/* ── MODAL ── */
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(26,43,74,.45);z-index:100;align-items:flex-end}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--surface);border-top-left-radius:20px;border-top-right-radius:20px;border-top:1.5px solid var(--border);width:100%;max-height:93vh;overflow-y:auto;padding:0 0 36px;animation:slideup .22s ease}
+@keyframes slideup{from{transform:translateY(40px);opacity:.5}to{transform:none;opacity:1}}
+.modal-handle{width:36px;height:4px;border-radius:4px;background:var(--border);margin:12px auto 0}
+.modal-title{font-size:1rem;font-weight:700;padding:16px 16px 0;color:var(--navy)}
+.modal-body{padding:14px 16px 0;display:flex;flex-direction:column;gap:12px}
+.modal-footer{padding:14px 16px 0;display:flex;flex-direction:column;gap:8px}
+
+/* ── TECH SELECTOR ── */
+.tech-row{display:flex;gap:6px}
+.tech-btn{flex:1;padding:8px 4px;border-radius:8px;font-size:.75rem;font-weight:700;background:var(--panel);border:1.5px solid var(--border);color:var(--sub);text-align:center;cursor:pointer;transition:all .15s}
+.tech-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* ── SESSION ── */
+.ex-block{background:var(--surface);border-radius:var(--radius);border:1.5px solid var(--border);margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow)}
+.ex-block-head{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--navy);border-bottom:1.5px solid var(--border)}
+.ex-block-head .ex-name{font-weight:700;font-size:.9rem;flex:1;color:#fff}
+.ex-block-head .ex-target{font-size:.72rem;color:rgba(255,255,255,.6)}
+.ex-suggestion{padding:7px 13px;font-size:.78rem;color:var(--blue);background:var(--blue-lt);border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:6px}
+.ex-sets{padding:8px 13px 11px}
+.set-grid{display:grid;grid-template-columns:26px 1fr 1fr 54px 1fr 30px;gap:5px;align-items:center}
+.set-num{font-size:.72rem;color:var(--muted);text-align:center;font-weight:700}
+.set-header{font-size:.68rem;color:var(--muted);text-align:center;padding:0 0 4px}
+.set-row{padding:4px 0;border-bottom:1px solid var(--border)}
+.set-row:last-child{border-bottom:none}
+.set-done .set-num{color:var(--green)}
+.set-input{padding:7px 6px;font-size:.85rem;text-align:center}
+
+/* ── UNIT TOGGLE ── */
+.unit-toggle{display:flex;border-radius:6px;overflow:hidden;border:1.5px solid var(--border);flex-shrink:0;height:38px}
+.unit-btn{flex:1;font-size:.75rem;font-weight:700;color:var(--muted);padding:0 8px;background:var(--panel);transition:all .15s;white-space:nowrap}
+.unit-btn.active{background:var(--blue);color:#fff}
+
+/* ── PROGRESS SCREEN ── */
+.prog-chart-wrap{background:var(--surface);border-radius:var(--radius);border:1.5px solid var(--border);padding:14px;margin-bottom:10px;box-shadow:var(--shadow)}
+canvas{width:100%!important;display:block}
+.chart-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.legend-item{font-size:.72rem;font-weight:700;display:flex;align-items:center;gap:4px}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.prog-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.prog-table th{text-align:left;padding:7px 8px;color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1.5px solid var(--border)}
+.prog-table td{padding:8px;border-bottom:1px solid var(--border);color:var(--sub)}
+.prog-table tr:last-child td{border-bottom:none}
+.prog-table .hi{color:var(--green);font-weight:700}
+
+/* ── PLATEAU BADGE ── */
+.plateau-badge{display:inline-flex;align-items:center;gap:4px;background:var(--orange-lt);color:var(--orange);border:1px solid #f0c090;border-radius:6px;font-size:.72rem;font-weight:700;padding:3px 8px}
+
+/* ── SEARCH ── */
+.search-wrap{padding:10px 14px 6px;background:var(--bg);position:sticky;top:var(--top-h);z-index:10}
+.search-rel{position:relative}
+.search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search-rel input{padding-left:34px}
+
+/* ── VOLUME BAR ── */
+.vol-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.vol-bar-label{font-size:.78rem;color:var(--navy);font-weight:600;width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vol-bar-wrap{flex:1;height:8px;background:var(--panel);border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+.vol-bar-fill{height:100%;border-radius:4px;transition:width .4s}
+.vol-bar-val{font-size:.72rem;color:var(--sub);width:44px;text-align:right;flex-shrink:0}
+
+/* ── ROUTINE HISTORY PILL ── */
+.routine-period{font-size:.72rem;color:var(--muted);background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:2px 8px;display:inline-flex;align-items:center;gap:4px}
+
+/* ── TIMELINE ── */
+.timeline-item{display:flex;gap:10px;padding-bottom:16px;position:relative}
+.timeline-item::before{content:'';position:absolute;left:14px;top:28px;bottom:0;width:2px;background:var(--border)}
+.timeline-item:last-child::before{display:none}
+.tl-dot{width:28px;height:28px;border-radius:50%;background:var(--blue-lt);border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;font-size:11px;font-weight:800;color:var(--blue)}
+.tl-body{flex:1;padding-top:2px}
+.tl-title{font-weight:700;font-size:.9rem;color:var(--navy)}
+.tl-sub{font-size:.75rem;color:var(--sub);margin-top:2px}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:calc(var(--tab-h)+12px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:9px 18px;border-radius:20px;font-size:.85rem;font-weight:700;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:200;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── MISC ── */
+.divider{height:1.5px;background:var(--border);margin:12px 0}
+.empty{text-align:center;padding:40px 16px;color:var(--muted);font-size:.9rem}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}
+.text-right{text-align:right}
+.font-mono{font-family:'SF Mono','Fira Code',monospace}
+.tag-free{font-size:.65rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.05em}
+.tag-mach{font-size:.65rem;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:.05em}
+.tag-bw{font-size:.65rem;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.05em}
+.bw-note{font-size:.72rem;color:var(--blue);background:var(--blue-lt);padding:5px 10px;border-radius:6px;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div><div class="t-title" id="tb-title">Treino</div><div class="t-sub" id="tb-sub"></div></div>
+    <div class="t-right" id="tb-right"></div>
+  </div>
+
+  <div id="screen-area">
+    <!-- HOME -->
+    <div class="screen active" id="s-home">
+      <div class="scroll-body">
+        <button class="btn btn-navy" onclick="startFlow()" style="margin-bottom:14px">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><polygon points="5,3 19,12 5,21"/></svg>
+          Iniciar Treino
+        </button>
+        <div class="section-label">Peso Corporal</div>
+        <div class="card">
+          <div class="card-body" style="display:flex;align-items:center;gap:12px">
+            <div style="flex:1">
+              <div id="bw-val" style="font-size:1.8rem;font-weight:800;color:var(--navy)">—</div>
+              <div id="bw-date" style="font-size:.75rem;color:var(--sub)">Não registrado</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="openModal('m-bw')">Registrar</button>
+          </div>
+        </div>
+        <div class="section-label">Esta Semana</div>
+        <div class="stat-grid" id="week-stats"></div>
+        <div class="section-label">Últimas Sessões</div>
+        <div id="recent-sessions"></div>
+      </div>
+    </div>
+
+    <!-- PROGRESSO -->
+    <div class="screen" id="s-progress">
+      <div class="search-wrap">
+        <div class="search-rel">
+          <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="prog-search" placeholder="Buscar exercício…" oninput="filterProg(this.value)">
+        </div>
+      </div>
+      <div style="padding:0 14px 8px" id="prog-list"></div>
+      <div id="prog-detail"></div>
+    </div>
+
+    <!-- VOLUME -->
+    <div class="screen" id="s-volume">
+      <div class="scroll-body" id="vol-body"></div>
+    </div>
+
+    <!-- ROTINAS -->
+    <div class="screen" id="s-routines">
+      <div class="scroll-body">
+        <button class="btn btn-primary mb" onclick="newRoutine()" style="margin-bottom:14px">+ Nova Rotina</button>
+        <div id="routine-history-section"></div>
+        <div class="section-label">Rotinas Ativas</div>
+        <div id="routines-list"></div>
+      </div>
+    </div>
+
+    <!-- SESSÃO ATIVA -->
+    <div class="screen" id="s-session">
+      <div class="scroll-body" id="session-body"></div>
+    </div>
+
+    <!-- CONFIG -->
+    <div class="screen" id="s-config">
+      <div class="scroll-body">
+        <div class="section-label">Dados</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-secondary" onclick="exportJSON()">⬇ Exportar JSON</button>
+          <label class="btn btn-secondary" style="cursor:pointer">⬆ Importar JSON<input type="file" accept=".json" style="display:none" onchange="importJSON(event)"></label>
+        </div>
+        <div class="section-label">Academias</div>
+        <div class="card" id="gyms-list"></div>
+        <button class="btn btn-secondary btn-sm mt8" onclick="openModal('m-add-gym')">+ Academia</button>
+        <div class="section-label">Exercícios</div>
+        <div class="card" id="ex-catalog-list"></div>
+        <button class="btn btn-secondary btn-sm mt8" onclick="openModal('m-add-ex')">+ Exercício</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="tabbar">
+    <button class="tab active" data-s="home" onclick="goTab('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      Home<div class="tab-dot"></div>
+    </button>
+    <button class="tab" data-s="progress" onclick="goTab('progress')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>
+      Progresso<div class="tab-dot"></div>
+    </button>
+    <button class="tab" data-s="volume" onclick="goTab('volume')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Volume<div class="tab-dot"></div>
+    </button>
+    <button class="tab" data-s="routines" onclick="goTab('routines')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Rotinas<div class="tab-dot"></div>
+    </button>
+    <button class="tab" data-s="config" onclick="goTab('config')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 1 0 4.93 19.07 10 10 0 0 0 19.07 4.93z"/></svg>
+      Config<div class="tab-dot"></div>
+    </button>
+  </div>
+</div>
+
+<!-- ── MODALS ── -->
+<div class="modal-backdrop" id="m-start">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Iniciar Treino</div>
+    <div class="modal-body">
+      <div class="form-group"><label>Academia</label><select id="ss-gym"></select></div>
+      <div class="form-group"><label>Rotina</label><select id="ss-routine"><option value="">— Treino livre —</option></select></div>
+      <div class="form-group"><label>Divisão / Label</label><input type="text" id="ss-label" placeholder="ex: Push A, Upper, Legs…"></div>
+      <div class="form-group"><label>Peso corporal hoje (kg)</label><input type="number" step="0.1" id="ss-bw" placeholder="ex: 82.5"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-navy" onclick="confirmStart()">Começar</button>
+      <button class="btn btn-ghost" onclick="closeModal('m-start')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="m-bw">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Peso Corporal</div>
+    <div class="modal-body">
+      <div class="form-group"><label>Peso (kg)</label><input type="number" step="0.1" id="bw-inp" placeholder="ex: 82.5"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-navy" onclick="saveBW()">Salvar</button>
+      <button class="btn btn-ghost" onclick="closeModal('m-bw')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="m-add-ex-sess">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Adicionar Exercício</div>
+    <div class="search-wrap" style="position:static;padding:12px 16px 8px">
+      <div class="search-rel">
+        <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="ae-search" placeholder="Buscar…" oninput="filterAE(this.value)">
+      </div>
+    </div>
+    <div id="ae-list" style="max-height:55vh;overflow-y:auto"></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('m-add-ex-sess')">Fechar</button></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="m-new-routine">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="nrm-title">Nova Rotina</div>
+    <div class="modal-body">
+      <div class="form-group"><label>Nome</label><input type="text" id="nr-name" placeholder="ex: Push A"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3>Exercícios</h3>
+        <button class="btn btn-secondary btn-sm" onclick="openAddSlot()">+ Adicionar</button>
+      </div>
+      <div id="nr-slots" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-navy" onclick="saveRoutine()">Salvar</button>
+      <button class="btn btn-ghost" onclick="closeModal('m-new-routine')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="m-add-slot">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Configurar Exercício</div>
+    <div class="modal-body">
+      <div class="form-group"><label>Exercício</label><select id="slot-ex"></select></div>
+      <div class="form-row">
+        <div class="form-group flex1"><label>Séries</label><input type="number" id="slot-sets" value="3" min="1" max="10"></div>
+        <div class="form-group flex1"><label>Rep range</label><input type="text" id="slot-reps" placeholder="6-10"></div>
+        <div class="form-group flex1"><label>RIR alvo</label><input type="number" id="slot-rir" value="1" min="0" max="5"></div>
+      </div>
+      <div class="form-group">
+        <label>Técnica</label>
+        <div class="tech-row" id="slot-tech">
+          <div class="tech-btn active" data-t="straight" onclick="selTech(this,'slot-tech')">Straight</div>
+          <div class="tech-btn" data-t="rp" onclick="selTech(this,'slot-tech')">Rest-Pause</div>
+          <div class="tech-btn" data-t="backoff" onclick="selTech(this,'slot-tech')">Backoff</div>
+        </div>
+      </div>
+      <div>
+        <h3 style="margin-bottom:8px">Variante por academia</h3>
+        <div id="slot-gym-subs" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-navy" onclick="saveSlot()">Adicionar</button>
+      <button class="btn btn-ghost" onclick="closeModal('m-add-slot')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="m-add-gym">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Nova Academia</div>
+    <div class="modal-body"><div class="form-group"><label>Nome</label><input type="text" id="ng-name" placeholder="ex: SmartFit Centro"></div></div>
+    <div class="modal-footer">
+      <button class="btn btn-navy" onclick="saveGym()">Salvar</button>
+      <button class="btn btn-ghost" onclick="closeModal('m-add-gym')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="m-add-ex">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Novo Exercício</div>
+    <div class="modal-body">
+      <div class="form-group"><label>Nome</label><input type="text" id="ne-name" placeholder="ex: Pec Deck"></div>
+      <div class="form-group">
+        <label>Grupo muscular</label>
+        <select id="ne-cat">
+          <option value="chest">Peito</option><option value="shoulders">Ombros</option>
+          <option value="back_width">Costas (largura)</option><option value="back_thickness">Costas (espessura)</option>
+          <option value="triceps">Tríceps</option><option value="biceps">Bíceps</option>
+          <option value="forearms">Antebraço</option><option value="quads">Quadríceps</option>
+          <option value="posterior">Posterior</option><option value="adductors">Adutores</option>
+          <option value="abductors">Abdutores</option><option value="calves">Panturrilha</option>
+          <option value="core">Core</option><option value="olympic">Olímpico</option><option value="other">Outro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <div class="tech-row" id="ne-type">
+          <div class="tech-btn active" data-t="free" onclick="selTech(this,'ne-type')">Livre</div>
+          <div class="tech-btn" data-t="machine" onclick="selTech(this,'ne-type')">Máquina</div>
+          <div class="tech-btn" data-t="bw" onclick="selTech(this,'ne-type')">Peso corporal</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-navy" onclick="saveEx()">Salvar</button>
+      <button class="btn btn-ghost" onclick="closeModal('m-add-ex')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// SEED
+// ══════════════════════════════════════════════════════════════
+const SEED='{"meta":{"version":"1.0","created":"2026-06-14","peso_corporal":[{"date":"2025-01-01","kg":78}]},"gyms":[{"id":"skyfit","name":"Skyfit CT Joinville"},{"id":"newfit","name":"NewFit"},{"id":"mundo","name":"Mundo Fitness"},{"id":"vox","name":"Vox"},{"id":"unknown","name":"Academia desconhecida"}],"exercises":[{"id":"bench_press","name":"Bench Press (barra)","category":"chest","type":"free"},{"id":"incline_bench","name":"Incline Bench (barra)","category":"chest","type":"free"},{"id":"db_bench","name":"DB Bench Press","category":"chest","type":"free"},{"id":"db_press","name":"DB Press","category":"chest","type":"free"},{"id":"weighted_dips","name":"Weighted Dips","category":"chest","type":"free"},{"id":"dips","name":"Dips (BW)","category":"chest","type":"free"},{"id":"smith_bench","name":"Smith Bench Press","category":"chest","type":"machine"},{"id":"smith_incline","name":"Smith Incline Press","category":"chest","type":"machine"},{"id":"smith_decline","name":"Smith Decline Press","category":"chest","type":"machine"},{"id":"machine_press","name":"Machine Chest Press","category":"chest","type":"machine"},{"id":"decline_press","name":"Decline Press (máquina)","category":"chest","type":"machine"},{"id":"chest_fly","name":"Chest Fly (cabo/crossover)","category":"chest","type":"machine"},{"id":"pec_deck","name":"Pec Deck","category":"chest","type":"machine"},{"id":"press_around","name":"Press Around (cabo peito)","category":"chest","type":"machine"},{"id":"pullover","name":"Pullover (cabo/DB)","category":"chest","type":"free"},{"id":"ohp_bb","name":"BB OHP","category":"shoulders","type":"free"},{"id":"ohp_db","name":"DB OHP","category":"shoulders","type":"free"},{"id":"ohp_smith","name":"Smith OHP","category":"shoulders","type":"machine"},{"id":"ohp_machine","name":"Machine OHP","category":"shoulders","type":"machine"},{"id":"btn_smith","name":"BTN Smith Press","category":"shoulders","type":"machine"},{"id":"upright_row","name":"Upright Row","category":"shoulders","type":"free"},{"id":"lateral_raise","name":"Lateral Raise (DB/cabo)","category":"shoulders","type":"free"},{"id":"reverse_fly","name":"Reverse Fly / Crucifixo Inv","category":"shoulders","type":"machine"},{"id":"facepull","name":"Face Pull","category":"shoulders","type":"machine"},{"id":"pulldown","name":"Pulldown (barra/neutro)","category":"back_width","type":"machine"},{"id":"uni_pulldown","name":"Uni Pulldown (cabo)","category":"back_width","type":"machine"},{"id":"pull_around","name":"Pull Around (lat alto)","category":"back_width","type":"machine"},{"id":"weighted_pullup","name":"Weighted Pull-up","category":"back_width","type":"free"},{"id":"weighted_chinup","name":"Weighted Chin-up","category":"back_width","type":"free"},{"id":"pullup","name":"Pull-up (BW)","category":"back_width","type":"free"},{"id":"tbar_row","name":"T-Bar Row","category":"back_thickness","type":"free"},{"id":"bb_row","name":"BB Bent Over Row","category":"back_thickness","type":"free"},{"id":"pendlay_row","name":"Pendlay Row","category":"back_thickness","type":"free"},{"id":"db_row","name":"DB Row / Serrote","category":"back_thickness","type":"free"},{"id":"cable_row_wide","name":"Cable Row (wide/aberta)","category":"back_thickness","type":"machine"},{"id":"cable_row_lat","name":"Cable Row (lat/fechada)","category":"back_thickness","type":"machine"},{"id":"machine_row","name":"Machine Row","category":"back_thickness","type":"machine"},{"id":"rope_high_row","name":"Rope High Row","category":"back_thickness","type":"machine"},{"id":"shrug","name":"Shrug (Smith/barra)","category":"back_thickness","type":"free"},{"id":"close_grip_smith","name":"Close Grip Smith Press","category":"triceps","type":"machine"},{"id":"jm_press","name":"JM Press (Smith)","category":"triceps","type":"machine"},{"id":"tric_overhead","name":"Triceps Overhead (cabo/DB)","category":"triceps","type":"free"},{"id":"tric_pushdown","name":"Triceps Pushdown (corda)","category":"triceps","type":"machine"},{"id":"tric_extension","name":"Triceps Extension (cabo)","category":"triceps","type":"machine"},{"id":"skullcrusher","name":"Skullcrusher","category":"triceps","type":"free"},{"id":"db_curl","name":"DB Curl","category":"biceps","type":"free"},{"id":"hammer_curl","name":"Hammer Curl","category":"biceps","type":"free"},{"id":"cable_curl","name":"Cable Curl (bayesian/cabo)","category":"biceps","type":"machine"},{"id":"preacher_curl","name":"Preacher Curl (máq/DB)","category":"biceps","type":"machine"},{"id":"incline_curl","name":"Incline Curl","category":"biceps","type":"free"},{"id":"spider_curl","name":"Spider Curl","category":"biceps","type":"free"},{"id":"hercules_curl","name":"Hercules Curl (cabo alto)","category":"biceps","type":"machine"},{"id":"forearm","name":"Forearm (wrist curl/reverse)","category":"forearms","type":"free"},{"id":"squat","name":"BB Squat","category":"quads","type":"free"},{"id":"smith_squat","name":"Smith Squat","category":"quads","type":"machine"},{"id":"hack_squat","name":"Hack Squat","category":"quads","type":"machine"},{"id":"leg_press","name":"Leg Press","category":"quads","type":"machine"},{"id":"pendulum_squat","name":"Pendulum Squat","category":"quads","type":"machine"},{"id":"leg_extension","name":"Leg Extension","category":"quads","type":"machine"},{"id":"sissy_squat","name":"Sissy Squat","category":"quads","type":"free"},{"id":"bulgarian","name":"Bulgarian Split Squat","category":"quads","type":"free"},{"id":"deadlift","name":"Deadlift","category":"posterior","type":"free"},{"id":"sumo_deadlift","name":"Sumo Deadlift","category":"posterior","type":"free"},{"id":"sldl","name":"SLDL","category":"posterior","type":"free"},{"id":"rdl","name":"RDL","category":"posterior","type":"free"},{"id":"stiff","name":"Stiff","category":"posterior","type":"free"},{"id":"leg_curl_seated","name":"Leg Curl Sentado","category":"posterior","type":"machine"},{"id":"leg_curl_lying","name":"Leg Curl Deitado","category":"posterior","type":"machine"},{"id":"leg_curl_standing","name":"Leg Curl Em Pé","category":"posterior","type":"machine"},{"id":"nordic_curl","name":"Nordic Curl","category":"posterior","type":"free"},{"id":"hip_thrust","name":"Hip Thrust / Elevação Pélvica","category":"posterior","type":"free"},{"id":"adductor","name":"Addutor (máquina)","category":"adductors","type":"machine"},{"id":"abductor","name":"Abdutor (máquina)","category":"abductors","type":"machine"},{"id":"calf","name":"Panturrilha (leg/sentado)","category":"calves","type":"machine"},{"id":"decline_crunch","name":"Decline Crunch","category":"core","type":"free"},{"id":"rope_crunch","name":"Rope Crunch","category":"core","type":"machine"},{"id":"leg_raise","name":"Leg Raise","category":"core","type":"free"},{"id":"snatch","name":"Snatch","category":"olympic","type":"free"},{"id":"hyperextension","name":"Hyperextension","category":"posterior","type":"free"}],"routines":[],"sessions":[{"id":"sess_2023-03-30","date":"2023-03-30","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2023-03-30_0","exercise_id":"bench_press","set_number":1,"weight_kg":45,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2023-03-30_1","exercise_id":"bench_press","set_number":2,"weight_kg":45,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2023-03-30_2","exercise_id":"tbar_row","set_number":3,"weight_kg":22.5,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2023-03-30_3","exercise_id":"tbar_row","set_number":4,"weight_kg":22.5,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2023-06-10","date":"2023-06-10","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2023-06-10_0","exercise_id":"bench_press","set_number":1,"weight_kg":35,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""},{"id":"s_2023-06-10_1","exercise_id":"bench_press","set_number":2,"weight_kg":35,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2023-06-16","date":"2023-06-16","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2023-06-16_0","exercise_id":"bench_press","set_number":1,"weight_kg":35,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2023-06-16_1","exercise_id":"bench_press","set_number":2,"weight_kg":35,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2023-09-02","date":"2023-09-02","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2023-09-02_0","exercise_id":"bench_press","set_number":1,"weight_kg":30,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2023-09-02_1","exercise_id":"bench_press","set_number":2,"weight_kg":30,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2023-09-02_2","exercise_id":"bb_row","set_number":3,"weight_kg":40,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""},{"id":"s_2023-09-02_3","exercise_id":"bb_row","set_number":4,"weight_kg":35,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2023-09-04","date":"2023-09-04","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2023-09-04_0","exercise_id":"pullup","set_number":1,"weight_kg":0,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2023-09-04_1","exercise_id":"dips","set_number":2,"weight_kg":0,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2023-09-04_2","exercise_id":"ohp_bb","set_number":3,"weight_kg":20,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2023-09-15","date":"2023-09-15","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2023-09-15_0","exercise_id":"bench_press","set_number":1,"weight_kg":30,"weight_unit":"kg","reps":10,"rir":null,"technique":"straight","note":""},{"id":"s_2023-09-15_1","exercise_id":"bench_press","set_number":2,"weight_kg":35,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""},{"id":"s_2023-09-15_2","exercise_id":"bb_row","set_number":3,"weight_kg":40,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2023-09-18","date":"2023-09-18","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2023-09-18_0","exercise_id":"incline_bench","set_number":1,"weight_kg":30,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""},{"id":"s_2023-09-18_1","exercise_id":"ohp_smith","set_number":2,"weight_kg":35,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""},{"id":"s_2023-09-18_2","exercise_id":"jm_press","set_number":3,"weight_kg":25,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-03-17","date":"2024-03-17","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-03-17_0","exercise_id":"bench_press","set_number":1,"weight_kg":95,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-03-18","date":"2024-03-18","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-03-18_0","exercise_id":"incline_bench","set_number":1,"weight_kg":40,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2024-03-18_1","exercise_id":"tbar_row","set_number":2,"weight_kg":80,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-03-22","date":"2024-03-22","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-03-22_0","exercise_id":"bench_press","set_number":1,"weight_kg":45,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-03-25","date":"2024-03-25","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-03-25_0","exercise_id":"bench_press","set_number":1,"weight_kg":90,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""},{"id":"s_2024-03-25_1","exercise_id":"incline_bench","set_number":2,"weight_kg":60,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-03-29","date":"2024-03-29","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-03-29_0","exercise_id":"bench_press","set_number":1,"weight_kg":38,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-03-31","date":"2024-03-31","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-03-31_0","exercise_id":"bench_press","set_number":1,"weight_kg":91,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2024-03-31_1","exercise_id":"tbar_row","set_number":2,"weight_kg":87,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-04-01","date":"2024-04-01","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-04-01_0","exercise_id":"deadlift","set_number":1,"weight_kg":145,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2024-04-01_1","exercise_id":"deadlift","set_number":2,"weight_kg":145,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2024-04-01_2","exercise_id":"tbar_row","set_number":3,"weight_kg":65,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-04-05","date":"2024-04-05","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-04-05_0","exercise_id":"bench_press","set_number":1,"weight_kg":38,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""},{"id":"s_2024-04-05_1","exercise_id":"weighted_pullup","set_number":2,"weight_kg":6,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-04-08","date":"2024-04-08","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-04-08_0","exercise_id":"bench_press","set_number":1,"weight_kg":90,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2024-04-08_1","exercise_id":"tbar_row","set_number":2,"weight_kg":87,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-04-12","date":"2024-04-12","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-04-12_0","exercise_id":"bench_press","set_number":1,"weight_kg":39,"weight_unit":"kg","reps":2,"rir":null,"technique":"straight","note":""},{"id":"s_2024-04-12_1","exercise_id":"weighted_pullup","set_number":2,"weight_kg":6,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-04-14","date":"2024-04-14","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-04-14_0","exercise_id":"bench_press","set_number":1,"weight_kg":89,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-04-19","date":"2024-04-19","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-04-19_0","exercise_id":"bench_press","set_number":1,"weight_kg":39,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2024-04-19_1","exercise_id":"weighted_pullup","set_number":2,"weight_kg":10,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-04-21","date":"2024-04-21","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-04-21_0","exercise_id":"bench_press","set_number":1,"weight_kg":90,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""},{"id":"s_2024-04-21_1","exercise_id":"bench_press","set_number":2,"weight_kg":75,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2024-04-21_2","exercise_id":"bb_row","set_number":3,"weight_kg":85,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-04-22","date":"2024-04-22","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-04-22_0","exercise_id":"incline_bench","set_number":1,"weight_kg":35,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-04-26","date":"2024-04-26","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-04-26_0","exercise_id":"bench_press","set_number":1,"weight_kg":38,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""},{"id":"s_2024-04-26_1","exercise_id":"weighted_pullup","set_number":2,"weight_kg":10,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-04-29","date":"2024-04-29","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-04-29_0","exercise_id":"incline_bench","set_number":1,"weight_kg":35,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-05-03","date":"2024-05-03","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-05-03_0","exercise_id":"bench_press","set_number":1,"weight_kg":40,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-05-06","date":"2024-05-06","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-05-06_0","exercise_id":"incline_bench","set_number":1,"weight_kg":35,"weight_unit":"kg","reps":10,"rir":null,"technique":"straight","note":""},{"id":"s_2024-05-06_1","exercise_id":"tbar_row","set_number":2,"weight_kg":70,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-05-10","date":"2024-05-10","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-05-10_0","exercise_id":"bench_press","set_number":1,"weight_kg":40,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2024-05-10_1","exercise_id":"weighted_pullup","set_number":2,"weight_kg":15,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-05-13","date":"2024-05-13","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-05-13_0","exercise_id":"smith_decline","set_number":1,"weight_kg":40,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-05-14","date":"2024-05-14","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-05-14_0","exercise_id":"sldl","set_number":1,"weight_kg":70,"weight_unit":"kg","reps":1,"rir":null,"technique":"straight","note":""},{"id":"s_2024-05-14_1","exercise_id":"tbar_row","set_number":2,"weight_kg":80,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-05-15","date":"2024-05-15","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-05-15_0","exercise_id":"squat","set_number":1,"weight_kg":70,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-05-20","date":"2024-05-20","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-05-20_0","exercise_id":"smith_decline","set_number":1,"weight_kg":40,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-05-21","date":"2024-05-21","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-05-21_0","exercise_id":"sldl","set_number":1,"weight_kg":70,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2024-05-21_1","exercise_id":"tbar_row","set_number":2,"weight_kg":80,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-05-23","date":"2024-05-23","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-05-23_0","exercise_id":"squat","set_number":1,"weight_kg":70,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-05-27","date":"2024-05-27","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-05-27_0","exercise_id":"smith_decline","set_number":1,"weight_kg":40,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-05-28","date":"2024-05-28","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-05-28_0","exercise_id":"sldl","set_number":1,"weight_kg":70,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2024-05-28_1","exercise_id":"tbar_row","set_number":2,"weight_kg":80,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-05-30","date":"2024-05-30","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-05-30_0","exercise_id":"squat","set_number":1,"weight_kg":70,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-06-03","date":"2024-06-03","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-06-03_0","exercise_id":"smith_decline","set_number":1,"weight_kg":40,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-06-04","date":"2024-06-04","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-06-04_0","exercise_id":"sldl","set_number":1,"weight_kg":70,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2024-06-04_1","exercise_id":"tbar_row","set_number":2,"weight_kg":80,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-06-10","date":"2024-06-10","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-06-10_0","exercise_id":"smith_decline","set_number":1,"weight_kg":40,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-06-11","date":"2024-06-11","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-06-11_0","exercise_id":"sldl","set_number":1,"weight_kg":71,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2024-06-11_1","exercise_id":"tbar_row","set_number":2,"weight_kg":80,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-06-17","date":"2024-06-17","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-06-17_0","exercise_id":"smith_decline","set_number":1,"weight_kg":43,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-06-18","date":"2024-06-18","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-06-18_0","exercise_id":"sldl","set_number":1,"weight_kg":72,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2024-06-18_1","exercise_id":"tbar_row","set_number":2,"weight_kg":82,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-06-24","date":"2024-06-24","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-06-24_0","exercise_id":"smith_decline","set_number":1,"weight_kg":43,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-06-25","date":"2024-06-25","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-06-25_0","exercise_id":"sldl","set_number":1,"weight_kg":73,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2024-06-25_1","exercise_id":"tbar_row","set_number":2,"weight_kg":82,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-06-27","date":"2024-06-27","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-06-27_0","exercise_id":"squat","set_number":1,"weight_kg":65,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-01","date":"2024-07-01","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-01_0","exercise_id":"smith_decline","set_number":1,"weight_kg":43,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-02","date":"2024-07-02","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-02_0","exercise_id":"sldl","set_number":1,"weight_kg":74,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-05","date":"2024-07-05","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-05_0","exercise_id":"squat","set_number":1,"weight_kg":65,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-08","date":"2024-07-08","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-08_0","exercise_id":"smith_decline","set_number":1,"weight_kg":43,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2024-07-08_1","exercise_id":"smith_decline","set_number":2,"weight_kg":43,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-09","date":"2024-07-09","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-09_0","exercise_id":"bb_row","set_number":1,"weight_kg":35,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-10","date":"2024-07-10","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-10_0","exercise_id":"squat","set_number":1,"weight_kg":145,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-13","date":"2024-07-13","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-13_0","exercise_id":"deadlift","set_number":1,"weight_kg":165,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-15","date":"2024-07-15","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-15_0","exercise_id":"smith_decline","set_number":1,"weight_kg":43,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-16","date":"2024-07-16","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-16_0","exercise_id":"bb_row","set_number":1,"weight_kg":36,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-17","date":"2024-07-17","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-17_0","exercise_id":"squat","set_number":1,"weight_kg":149,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-20","date":"2024-07-20","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-20_0","exercise_id":"deadlift","set_number":1,"weight_kg":165,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-22","date":"2024-07-22","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-22_0","exercise_id":"smith_decline","set_number":1,"weight_kg":45,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-23","date":"2024-07-23","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-23_0","exercise_id":"bb_row","set_number":1,"weight_kg":37,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-25","date":"2024-07-25","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-25_0","exercise_id":"squat","set_number":1,"weight_kg":155,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-27","date":"2024-07-27","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-27_0","exercise_id":"deadlift","set_number":1,"weight_kg":165,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-29","date":"2024-07-29","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-29_0","exercise_id":"bench_press","set_number":1,"weight_kg":35,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-30","date":"2024-07-30","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-30_0","exercise_id":"bb_row","set_number":1,"weight_kg":38,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-07-31","date":"2024-07-31","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-07-31_0","exercise_id":"squat","set_number":1,"weight_kg":155,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-08-06","date":"2024-08-06","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-08-06_0","exercise_id":"bench_press","set_number":1,"weight_kg":35,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-08-07","date":"2024-08-07","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-08-07_0","exercise_id":"bb_row","set_number":1,"weight_kg":40,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-08-09","date":"2024-08-09","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-08-09_0","exercise_id":"squat","set_number":1,"weight_kg":157,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-08-12","date":"2024-08-12","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-08-12_0","exercise_id":"bench_press","set_number":1,"weight_kg":38,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-08-13","date":"2024-08-13","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-08-13_0","exercise_id":"bb_row","set_number":1,"weight_kg":40,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-08-15","date":"2024-08-15","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-08-15_0","exercise_id":"squat","set_number":1,"weight_kg":165,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-08-19","date":"2024-08-19","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-08-19_0","exercise_id":"bench_press","set_number":1,"weight_kg":38,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-09-04","date":"2024-09-04","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-09-04_0","exercise_id":"bench_press","set_number":1,"weight_kg":100,"weight_unit":"kg","reps":1,"rir":null,"technique":"straight","note":""},{"id":"s_2024-09-04_1","exercise_id":"bench_press","set_number":2,"weight_kg":100,"weight_unit":"kg","reps":1,"rir":null,"technique":"straight","note":"PR_test"}]},{"id":"sess_2024-09-11","date":"2024-09-11","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-09-11_0","exercise_id":"squat","set_number":1,"weight_kg":150,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2024-09-11_1","exercise_id":"squat","set_number":2,"weight_kg":150,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":"PR"}]},{"id":"sess_2024-09-13","date":"2024-09-13","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-09-13_0","exercise_id":"bench_press","set_number":1,"weight_kg":38,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-09-17","date":"2024-09-17","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-09-17_0","exercise_id":"incline_bench","set_number":1,"weight_kg":32,"weight_unit":"kg","reps":11,"rir":null,"technique":"straight","note":""},{"id":"s_2024-09-17_1","exercise_id":"weighted_dips","set_number":2,"weight_kg":35,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""},{"id":"s_2024-09-17_2","exercise_id":"bb_row","set_number":3,"weight_kg":40,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-09-18","date":"2024-09-18","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-09-18_0","exercise_id":"deadlift","set_number":1,"weight_kg":72,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-09-23","date":"2024-09-23","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-09-23_0","exercise_id":"incline_bench","set_number":1,"weight_kg":32,"weight_unit":"kg","reps":10,"rir":null,"technique":"straight","note":""},{"id":"s_2024-09-23_1","exercise_id":"bb_row","set_number":2,"weight_kg":40,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-09-27","date":"2024-09-27","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-09-27_0","exercise_id":"bench_press","set_number":1,"weight_kg":40,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-09-30","date":"2024-09-30","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-09-30_0","exercise_id":"deadlift","set_number":1,"weight_kg":165,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2024-09-30_1","exercise_id":"deadlift","set_number":2,"weight_kg":165,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":"PR"}]},{"id":"sess_2024-10-08","date":"2024-10-08","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-10-08_0","exercise_id":"bench_press","set_number":1,"weight_kg":38,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-10-21","date":"2024-10-21","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-10-21_0","exercise_id":"deadlift","set_number":1,"weight_kg":175,"weight_unit":"kg","reps":2,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-10-23","date":"2024-10-23","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-10-23_0","exercise_id":"bench_press","set_number":1,"weight_kg":37.5,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-10-25","date":"2024-10-25","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-10-25_0","exercise_id":"incline_bench","set_number":1,"weight_kg":35,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2024-10-25_1","exercise_id":"weighted_dips","set_number":2,"weight_kg":35,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2024-10-25_2","exercise_id":"bb_row","set_number":3,"weight_kg":43,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-10-28","date":"2024-10-28","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-10-28_0","exercise_id":"bench_press","set_number":1,"weight_kg":38,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-10-30","date":"2024-10-30","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-10-30_0","exercise_id":"squat","set_number":1,"weight_kg":70,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-11-07","date":"2024-11-07","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-11-07_0","exercise_id":"incline_bench","set_number":1,"weight_kg":36,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2024-11-07_1","exercise_id":"weighted_dips","set_number":2,"weight_kg":35,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2024-11-07_2","exercise_id":"bb_row","set_number":3,"weight_kg":43,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-11-11","date":"2024-11-11","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-11-11_0","exercise_id":"bench_press","set_number":1,"weight_kg":37.5,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-11-15","date":"2024-11-15","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-11-15_0","exercise_id":"deadlift","set_number":1,"weight_kg":175,"weight_unit":"kg","reps":1,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-11-18","date":"2024-11-18","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-11-18_0","exercise_id":"incline_bench","set_number":1,"weight_kg":36,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2024-11-18_1","exercise_id":"weighted_dips","set_number":2,"weight_kg":35,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2024-11-18_2","exercise_id":"bb_row","set_number":3,"weight_kg":43,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-11-22","date":"2024-11-22","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-11-22_0","exercise_id":"bench_press","set_number":1,"weight_kg":38,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-11-30","date":"2024-11-30","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-11-30_0","exercise_id":"deadlift","set_number":1,"weight_kg":170,"weight_unit":"kg","reps":1,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-12-04","date":"2024-12-04","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-12-04_0","exercise_id":"incline_bench","set_number":1,"weight_kg":35,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2024-12-31","date":"2024-12-31","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2024-12-31_0","exercise_id":"squat","set_number":1,"weight_kg":150,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-01-02","date":"2025-01-02","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-01-02_0","exercise_id":"bench_press","set_number":1,"weight_kg":85,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-02_1","exercise_id":"bench_press","set_number":2,"weight_kg":30,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-02_2","exercise_id":"incline_bench","set_number":3,"weight_kg":27.5,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-01-06","date":"2025-01-06","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-01-06_0","exercise_id":"bench_press","set_number":1,"weight_kg":90,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-06_1","exercise_id":"tbar_row","set_number":2,"weight_kg":85,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-06_2","exercise_id":"ohp_db","set_number":3,"weight_kg":34,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-06_3","exercise_id":"smith_decline","set_number":4,"weight_kg":35,"weight_unit":"kg","reps":10,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-01-07","date":"2025-01-07","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-01-07_0","exercise_id":"squat","set_number":1,"weight_kg":151,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-01-09","date":"2025-01-09","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-01-09_0","exercise_id":"incline_bench","set_number":1,"weight_kg":85,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-09_1","exercise_id":"weighted_dips","set_number":2,"weight_kg":30,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-09_2","exercise_id":"weighted_chinup","set_number":3,"weight_kg":20,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-09_3","exercise_id":"bench_press","set_number":4,"weight_kg":31,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-09_4","exercise_id":"incline_bench","set_number":5,"weight_kg":30,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-01-11","date":"2025-01-11","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-01-11_0","exercise_id":"sumo_deadlift","set_number":1,"weight_kg":175,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-01-13","date":"2025-01-13","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-01-13_0","exercise_id":"bench_press","set_number":1,"weight_kg":91,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-13_1","exercise_id":"tbar_row","set_number":2,"weight_kg":85,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-13_2","exercise_id":"ohp_db","set_number":3,"weight_kg":35,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-13_3","exercise_id":"smith_decline","set_number":4,"weight_kg":40,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-01-16","date":"2025-01-16","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-01-16_0","exercise_id":"incline_bench","set_number":1,"weight_kg":85,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-16_1","exercise_id":"weighted_dips","set_number":2,"weight_kg":30,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-16_2","exercise_id":"weighted_chinup","set_number":3,"weight_kg":20,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-16_3","exercise_id":"bench_press","set_number":4,"weight_kg":31,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-16_4","exercise_id":"incline_bench","set_number":5,"weight_kg":30,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-01-20","date":"2025-01-20","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-01-20_0","exercise_id":"bench_press","set_number":1,"weight_kg":95,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-20_1","exercise_id":"tbar_row","set_number":2,"weight_kg":85,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-20_2","exercise_id":"ohp_db","set_number":3,"weight_kg":35,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-20_3","exercise_id":"squat","set_number":4,"weight_kg":151,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-20_4","exercise_id":"smith_decline","set_number":5,"weight_kg":40,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-01-21","date":"2025-01-21","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-01-21_0","exercise_id":"sumo_deadlift","set_number":1,"weight_kg":175,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-01-23","date":"2025-01-23","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-01-23_0","exercise_id":"incline_bench","set_number":1,"weight_kg":87,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-23_1","exercise_id":"weighted_dips","set_number":2,"weight_kg":30,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-23_2","exercise_id":"weighted_chinup","set_number":3,"weight_kg":20,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-23_3","exercise_id":"bench_press","set_number":4,"weight_kg":31,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-23_4","exercise_id":"incline_bench","set_number":5,"weight_kg":30,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-01-24","date":"2025-01-24","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-01-24_0","exercise_id":"squat","set_number":1,"weight_kg":155,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-01-25","date":"2025-01-25","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-01-25_0","exercise_id":"leg_press","set_number":1,"weight_kg":120,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-01-27","date":"2025-01-27","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-01-27_0","exercise_id":"bench_press","set_number":1,"weight_kg":89,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-27_1","exercise_id":"tbar_row","set_number":2,"weight_kg":87,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-27_2","exercise_id":"ohp_db","set_number":3,"weight_kg":35,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-01-28","date":"2025-01-28","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-01-28_0","exercise_id":"squat","set_number":1,"weight_kg":155,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-01-30","date":"2025-01-30","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-01-30_0","exercise_id":"incline_bench","set_number":1,"weight_kg":87,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-30_1","exercise_id":"weighted_dips","set_number":2,"weight_kg":30,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-30_2","exercise_id":"weighted_chinup","set_number":3,"weight_kg":20,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2025-01-30_3","exercise_id":"bench_press","set_number":4,"weight_kg":31,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-01-31","date":"2025-01-31","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-01-31_0","exercise_id":"incline_bench","set_number":1,"weight_kg":30,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-02-03","date":"2025-02-03","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-02-03_0","exercise_id":"leg_press","set_number":1,"weight_kg":120,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-02-10","date":"2025-02-10","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-02-10_0","exercise_id":"incline_bench","set_number":1,"weight_kg":30,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-02-13","date":"2025-02-13","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-02-13_0","exercise_id":"sumo_deadlift","set_number":1,"weight_kg":181,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2025-02-13_1","exercise_id":"sumo_deadlift","set_number":2,"weight_kg":181,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":"PR"}]},{"id":"sess_2025-02-14","date":"2025-02-14","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-02-14_0","exercise_id":"leg_press","set_number":1,"weight_kg":120,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-02-17","date":"2025-02-17","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-02-17_0","exercise_id":"bench_press","set_number":1,"weight_kg":89,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2025-02-17_1","exercise_id":"tbar_row","set_number":2,"weight_kg":87,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2025-02-17_2","exercise_id":"ohp_db","set_number":3,"weight_kg":35,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-02-20","date":"2025-02-20","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-02-20_0","exercise_id":"incline_bench","set_number":1,"weight_kg":87,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""},{"id":"s_2025-02-20_1","exercise_id":"weighted_dips","set_number":2,"weight_kg":30,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2025-02-20_2","exercise_id":"weighted_chinup","set_number":3,"weight_kg":10,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-02-24","date":"2025-02-24","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-02-24_0","exercise_id":"bench_press","set_number":1,"weight_kg":95,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""},{"id":"s_2025-02-24_1","exercise_id":"tbar_row","set_number":2,"weight_kg":87,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2025-02-24_2","exercise_id":"ohp_db","set_number":3,"weight_kg":35,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-02-25","date":"2025-02-25","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-02-25_0","exercise_id":"sumo_deadlift","set_number":1,"weight_kg":181,"weight_unit":"kg","reps":2,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-02-27","date":"2025-02-27","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-02-27_0","exercise_id":"incline_bench","set_number":1,"weight_kg":87,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2025-02-27_1","exercise_id":"weighted_dips","set_number":2,"weight_kg":30,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2025-02-27_2","exercise_id":"weighted_chinup","set_number":3,"weight_kg":20,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""},{"id":"s_2025-02-27_3","exercise_id":"bench_press","set_number":4,"weight_kg":26,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-02-28","date":"2025-02-28","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-02-28_0","exercise_id":"sldl","set_number":1,"weight_kg":57,"weight_unit":"kg","reps":2,"rir":null,"technique":"straight","note":""},{"id":"s_2025-02-28_1","exercise_id":"bb_row","set_number":2,"weight_kg":30,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-03-01","date":"2025-03-01","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-03-01_0","exercise_id":"squat","set_number":1,"weight_kg":155,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-03-02","date":"2025-03-02","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-03-02_0","exercise_id":"squat","set_number":1,"weight_kg":50,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-03-04","date":"2025-03-04","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-03-04_0","exercise_id":"bench_press","set_number":1,"weight_kg":101,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2025-03-04_1","exercise_id":"ohp_db","set_number":2,"weight_kg":35,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""},{"id":"s_2025-03-04_2","exercise_id":"bench_press","set_number":3,"weight_kg":101,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":"PR"}]},{"id":"sess_2025-03-06","date":"2025-03-06","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-03-06_0","exercise_id":"bench_press","set_number":1,"weight_kg":27,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-03-07","date":"2025-03-07","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-03-07_0","exercise_id":"sldl","set_number":1,"weight_kg":57,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2025-03-07_1","exercise_id":"bb_row","set_number":2,"weight_kg":30,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-03-09","date":"2025-03-09","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-03-09_0","exercise_id":"squat","set_number":1,"weight_kg":50,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-03-13","date":"2025-03-13","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-03-13_0","exercise_id":"bench_press","set_number":1,"weight_kg":27,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-03-14","date":"2025-03-14","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-03-14_0","exercise_id":"sldl","set_number":1,"weight_kg":57,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""},{"id":"s_2025-03-14_1","exercise_id":"bb_row","set_number":2,"weight_kg":30,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-03-16","date":"2025-03-16","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-03-16_0","exercise_id":"squat","set_number":1,"weight_kg":52,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-03-20","date":"2025-03-20","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-03-20_0","exercise_id":"bench_press","set_number":1,"weight_kg":27,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-03-21","date":"2025-03-21","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-03-21_0","exercise_id":"sldl","set_number":1,"weight_kg":57,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""},{"id":"s_2025-03-21_1","exercise_id":"bb_row","set_number":2,"weight_kg":33,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-03-23","date":"2025-03-23","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-03-23_0","exercise_id":"squat","set_number":1,"weight_kg":52,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-03-27","date":"2025-03-27","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-03-27_0","exercise_id":"bench_press","set_number":1,"weight_kg":28,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-03-28","date":"2025-03-28","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-03-28_0","exercise_id":"sldl","set_number":1,"weight_kg":57,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2025-03-28_1","exercise_id":"bb_row","set_number":2,"weight_kg":33,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-03-30","date":"2025-03-30","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-03-30_0","exercise_id":"squat","set_number":1,"weight_kg":52,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-04-03","date":"2025-04-03","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-04-03_0","exercise_id":"bench_press","set_number":1,"weight_kg":28,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-04-04","date":"2025-04-04","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-04-04_0","exercise_id":"sldl","set_number":1,"weight_kg":57,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-04-06","date":"2025-04-06","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-04-06_0","exercise_id":"squat","set_number":1,"weight_kg":53,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-04-10","date":"2025-04-10","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-04-10_0","exercise_id":"bench_press","set_number":1,"weight_kg":29,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-04-11","date":"2025-04-11","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-04-11_0","exercise_id":"sldl","set_number":1,"weight_kg":57,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-04-13","date":"2025-04-13","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-04-13_0","exercise_id":"squat","set_number":1,"weight_kg":55,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-04-17","date":"2025-04-17","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-04-17_0","exercise_id":"bench_press","set_number":1,"weight_kg":30,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-04-18","date":"2025-04-18","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-04-18_0","exercise_id":"sldl","set_number":1,"weight_kg":57,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-04-24","date":"2025-04-24","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-04-24_0","exercise_id":"bench_press","set_number":1,"weight_kg":30,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-04-25","date":"2025-04-25","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-04-25_0","exercise_id":"sldl","set_number":1,"weight_kg":57,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-04-27","date":"2025-04-27","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-04-27_0","exercise_id":"squat","set_number":1,"weight_kg":55,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-05-01","date":"2025-05-01","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-05-01_0","exercise_id":"bench_press","set_number":1,"weight_kg":30,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2025-05-01_1","exercise_id":"bench_press","set_number":2,"weight_kg":30,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-05-02","date":"2025-05-02","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-05-02_0","exercise_id":"sldl","set_number":1,"weight_kg":60,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-05-04","date":"2025-05-04","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-05-04_0","exercise_id":"squat","set_number":1,"weight_kg":57,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2025-05-04_1","exercise_id":"squat","set_number":2,"weight_kg":57,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-05-08","date":"2025-05-08","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-05-08_0","exercise_id":"bench_press","set_number":1,"weight_kg":31,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-05-11","date":"2025-05-11","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-05-11_0","exercise_id":"squat","set_number":1,"weight_kg":58,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-05-15","date":"2025-05-15","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-05-15_0","exercise_id":"bench_press","set_number":1,"weight_kg":31,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-05-18","date":"2025-05-18","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-05-18_0","exercise_id":"squat","set_number":1,"weight_kg":60,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-05-22","date":"2025-05-22","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-05-22_0","exercise_id":"bench_press","set_number":1,"weight_kg":31,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-05-25","date":"2025-05-25","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-05-25_0","exercise_id":"squat","set_number":1,"weight_kg":60,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-06-01","date":"2025-06-01","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-06-01_0","exercise_id":"bench_press","set_number":1,"weight_kg":30,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2025-06-01_1","exercise_id":"db_bench","set_number":2,"weight_kg":35,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-06-02","date":"2025-06-02","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-06-02_0","exercise_id":"sldl","set_number":1,"weight_kg":63,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2025-06-02_1","exercise_id":"tbar_row","set_number":2,"weight_kg":60,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-06-08","date":"2025-06-08","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-06-08_0","exercise_id":"bench_press","set_number":1,"weight_kg":30,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2025-06-08_1","exercise_id":"db_bench","set_number":2,"weight_kg":35,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-06-09","date":"2025-06-09","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-06-09_0","exercise_id":"sldl","set_number":1,"weight_kg":64,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""},{"id":"s_2025-06-09_1","exercise_id":"tbar_row","set_number":2,"weight_kg":65,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-06-15","date":"2025-06-15","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-06-15_0","exercise_id":"bench_press","set_number":1,"weight_kg":30,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2025-06-15_1","exercise_id":"db_bench","set_number":2,"weight_kg":35,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-06-16","date":"2025-06-16","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-06-16_0","exercise_id":"sldl","set_number":1,"weight_kg":65,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2025-06-16_1","exercise_id":"tbar_row","set_number":2,"weight_kg":65,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-06-22","date":"2025-06-22","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-06-22_0","exercise_id":"bench_press","set_number":1,"weight_kg":30,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""},{"id":"s_2025-06-22_1","exercise_id":"db_bench","set_number":2,"weight_kg":35,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-06-23","date":"2025-06-23","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-06-23_0","exercise_id":"tbar_row","set_number":1,"weight_kg":68,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-06-29","date":"2025-06-29","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-06-29_0","exercise_id":"bench_press","set_number":1,"weight_kg":30,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2025-06-29_1","exercise_id":"db_bench","set_number":2,"weight_kg":35,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-06-30","date":"2025-06-30","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-06-30_0","exercise_id":"sldl","set_number":1,"weight_kg":65,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2025-06-30_1","exercise_id":"tbar_row","set_number":2,"weight_kg":70,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-07-01","date":"2025-07-01","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-07-01_0","exercise_id":"squat","set_number":1,"weight_kg":160,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":"PR_approx"},{"id":"s_2025-07-01_1","exercise_id":"deadlift","set_number":2,"weight_kg":175,"weight_unit":"kg","reps":2,"rir":null,"technique":"straight","note":"PR_approx"},{"id":"s_2025-07-01_2","exercise_id":"sumo_deadlift","set_number":3,"weight_kg":190,"weight_unit":"kg","reps":1,"rir":null,"technique":"straight","note":"PR_approx"}]},{"id":"sess_2025-07-06","date":"2025-07-06","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-07-06_0","exercise_id":"db_bench","set_number":1,"weight_kg":40,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-07-08","date":"2025-07-08","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-07-08_0","exercise_id":"sldl","set_number":1,"weight_kg":74,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""},{"id":"s_2025-07-08_1","exercise_id":"tbar_row","set_number":2,"weight_kg":50,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-08-08","date":"2025-08-08","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-08-08_0","exercise_id":"squat","set_number":1,"weight_kg":63,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-08-15","date":"2025-08-15","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-08-15_0","exercise_id":"squat","set_number":1,"weight_kg":66,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-08-23","date":"2025-08-23","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-08-23_0","exercise_id":"squat","set_number":1,"weight_kg":68,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-08-24","date":"2025-08-24","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-08-24_0","exercise_id":"smith_bench","set_number":1,"weight_kg":38,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-08-25","date":"2025-08-25","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-08-25_0","exercise_id":"deadlift","set_number":1,"weight_kg":67,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-08-28","date":"2025-08-28","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-08-28_0","exercise_id":"bb_row","set_number":1,"weight_kg":60,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-08-30","date":"2025-08-30","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-08-30_0","exercise_id":"squat","set_number":1,"weight_kg":68,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-08-31","date":"2025-08-31","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-08-31_0","exercise_id":"smith_bench","set_number":1,"weight_kg":38,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-09-01","date":"2025-09-01","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-09-01_0","exercise_id":"deadlift","set_number":1,"weight_kg":70,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-09-04","date":"2025-09-04","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-09-04_0","exercise_id":"bb_row","set_number":1,"weight_kg":35,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-09-06","date":"2025-09-06","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-09-06_0","exercise_id":"squat","set_number":1,"weight_kg":68,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-09-07","date":"2025-09-07","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-09-07_0","exercise_id":"smith_bench","set_number":1,"weight_kg":38,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-09-09","date":"2025-09-09","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-09-09_0","exercise_id":"deadlift","set_number":1,"weight_kg":70,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-09-12","date":"2025-09-12","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-09-12_0","exercise_id":"bb_row","set_number":1,"weight_kg":40,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-09-13","date":"2025-09-13","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-09-13_0","exercise_id":"squat","set_number":1,"weight_kg":70,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-09-14","date":"2025-09-14","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-09-14_0","exercise_id":"smith_bench","set_number":1,"weight_kg":38,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-09-15","date":"2025-09-15","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-09-15_0","exercise_id":"deadlift","set_number":1,"weight_kg":72,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-09-19","date":"2025-09-19","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-09-19_0","exercise_id":"bb_row","set_number":1,"weight_kg":42,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-09-23","date":"2025-09-23","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-09-23_0","exercise_id":"smith_incline","set_number":1,"weight_kg":25,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-09-25","date":"2025-09-25","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-09-25_0","exercise_id":"tbar_row","set_number":1,"weight_kg":75,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-09-26","date":"2025-09-26","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-09-26_0","exercise_id":"db_press","set_number":1,"weight_kg":22.5,"weight_unit":"kg","reps":12,"rir":null,"technique":"straight","note":""},{"id":"s_2025-09-26_1","exercise_id":"bb_row","set_number":2,"weight_kg":25,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2025-09-26_2","exercise_id":"machine_press","set_number":3,"weight_kg":40,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-09-28","date":"2025-09-28","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-09-28_0","exercise_id":"squat","set_number":1,"weight_kg":70,"weight_unit":"kg","reps":3,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-09-29","date":"2025-09-29","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-09-29_0","exercise_id":"smith_incline","set_number":1,"weight_kg":25,"weight_unit":"kg","reps":12,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-01","date":"2025-10-01","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-01_0","exercise_id":"rdl","set_number":1,"weight_kg":35,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""},{"id":"s_2025-10-01_1","exercise_id":"leg_press","set_number":2,"weight_kg":80,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-02","date":"2025-10-02","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-02_0","exercise_id":"tbar_row","set_number":1,"weight_kg":75,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-03","date":"2025-10-03","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-03_0","exercise_id":"deadlift","set_number":1,"weight_kg":45,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2025-10-03_1","exercise_id":"machine_press","set_number":2,"weight_kg":41,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-04","date":"2025-10-04","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-04_0","exercise_id":"hack_squat","set_number":1,"weight_kg":55,"weight_unit":"kg","reps":10,"rir":null,"technique":"straight","note":""},{"id":"s_2025-10-04_1","exercise_id":"squat","set_number":2,"weight_kg":73,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-06","date":"2025-10-06","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-06_0","exercise_id":"db_press","set_number":1,"weight_kg":25,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2025-10-06_1","exercise_id":"bb_row","set_number":2,"weight_kg":27,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-10","date":"2025-10-10","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-10_0","exercise_id":"smith_incline","set_number":1,"weight_kg":28,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""},{"id":"s_2025-10-10_1","exercise_id":"tbar_row","set_number":2,"weight_kg":75,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-11","date":"2025-10-11","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-11_0","exercise_id":"rdl","set_number":1,"weight_kg":40,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2025-10-11_1","exercise_id":"leg_press","set_number":2,"weight_kg":100,"weight_unit":"kg","reps":11,"rir":null,"technique":"straight","note":""},{"id":"s_2025-10-11_2","exercise_id":"machine_press","set_number":3,"weight_kg":41,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-12","date":"2025-10-12","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-12_0","exercise_id":"squat","set_number":1,"weight_kg":75,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-13","date":"2025-10-13","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-13_0","exercise_id":"deadlift","set_number":1,"weight_kg":45,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-14","date":"2025-10-14","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-14_0","exercise_id":"hack_squat","set_number":1,"weight_kg":60,"weight_unit":"kg","reps":12,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-17","date":"2025-10-17","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-17_0","exercise_id":"db_press","set_number":1,"weight_kg":25,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""},{"id":"s_2025-10-17_1","exercise_id":"bb_row","set_number":2,"weight_kg":27,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-20","date":"2025-10-20","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-20_0","exercise_id":"smith_incline","set_number":1,"weight_kg":28,"weight_unit":"kg","reps":10,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-21","date":"2025-10-21","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-21_0","exercise_id":"rdl","set_number":1,"weight_kg":40,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""},{"id":"s_2025-10-21_1","exercise_id":"leg_press","set_number":2,"weight_kg":110,"weight_unit":"kg","reps":11,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-23","date":"2025-10-23","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-23_0","exercise_id":"machine_press","set_number":1,"weight_kg":42,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-24","date":"2025-10-24","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-24_0","exercise_id":"deadlift","set_number":1,"weight_kg":50,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""},{"id":"s_2025-10-24_1","exercise_id":"tbar_row","set_number":2,"weight_kg":78,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-25","date":"2025-10-25","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-25_0","exercise_id":"hack_squat","set_number":1,"weight_kg":65,"weight_unit":"kg","reps":12,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-27","date":"2025-10-27","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-27_0","exercise_id":"db_press","set_number":1,"weight_kg":25,"weight_unit":"kg","reps":10,"rir":null,"technique":"straight","note":""},{"id":"s_2025-10-27_1","exercise_id":"bb_row","set_number":2,"weight_kg":30,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-30","date":"2025-10-30","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-30_0","exercise_id":"machine_press","set_number":1,"weight_kg":43,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-10-31","date":"2025-10-31","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-10-31_0","exercise_id":"smith_incline","set_number":1,"weight_kg":30,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""},{"id":"s_2025-10-31_1","exercise_id":"tbar_row","set_number":2,"weight_kg":80,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-11-01","date":"2025-11-01","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-11-01_0","exercise_id":"rdl","set_number":1,"weight_kg":45,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""},{"id":"s_2025-11-01_1","exercise_id":"leg_press","set_number":2,"weight_kg":115,"weight_unit":"kg","reps":10,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-11-02","date":"2025-11-02","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-11-02_0","exercise_id":"squat","set_number":1,"weight_kg":70,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-11-03","date":"2025-11-03","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-11-03_0","exercise_id":"deadlift","set_number":1,"weight_kg":50,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-11-07","date":"2025-11-07","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-11-07_0","exercise_id":"db_press","set_number":1,"weight_kg":25,"weight_unit":"kg","reps":10,"rir":null,"technique":"straight","note":""},{"id":"s_2025-11-07_1","exercise_id":"bb_row","set_number":2,"weight_kg":30,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""},{"id":"s_2025-11-07_2","exercise_id":"tbar_row","set_number":3,"weight_kg":80,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-11-08","date":"2025-11-08","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-11-08_0","exercise_id":"squat","set_number":1,"weight_kg":70,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-11-10","date":"2025-11-10","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-11-10_0","exercise_id":"smith_incline","set_number":1,"weight_kg":30,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-11-12","date":"2025-11-12","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-11-12_0","exercise_id":"rdl","set_number":1,"weight_kg":45,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""},{"id":"s_2025-11-12_1","exercise_id":"leg_press","set_number":2,"weight_kg":120,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-11-14","date":"2025-11-14","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-11-14_0","exercise_id":"deadlift","set_number":1,"weight_kg":55,"weight_unit":"kg","reps":2,"rir":null,"technique":"straight","note":""},{"id":"s_2025-11-14_1","exercise_id":"machine_press","set_number":2,"weight_kg":43,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-11-16","date":"2025-11-16","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-11-16_0","exercise_id":"db_press","set_number":1,"weight_kg":25,"weight_unit":"kg","reps":11,"rir":null,"technique":"straight","note":""},{"id":"s_2025-11-16_1","exercise_id":"bb_row","set_number":2,"weight_kg":31,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""},{"id":"s_2025-11-16_2","exercise_id":"hack_squat","set_number":3,"weight_kg":75,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-11-21","date":"2025-11-21","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-11-21_0","exercise_id":"tbar_row","set_number":1,"weight_kg":40,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""},{"id":"s_2025-11-21_1","exercise_id":"sldl","set_number":2,"weight_kg":40,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-11-22","date":"2025-11-22","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-11-22_0","exercise_id":"bench_press","set_number":1,"weight_kg":25,"weight_unit":"kg","reps":4,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-11-23","date":"2025-11-23","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-11-23_0","exercise_id":"squat","set_number":1,"weight_kg":50,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-11-28","date":"2025-11-28","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-11-28_0","exercise_id":"bench_press","set_number":1,"weight_kg":25,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-11-29","date":"2025-11-29","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-11-29_0","exercise_id":"tbar_row","set_number":1,"weight_kg":45,"weight_unit":"kg","reps":10,"rir":null,"technique":"straight","note":""},{"id":"s_2025-11-29_1","exercise_id":"sldl","set_number":2,"weight_kg":45,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-12-01","date":"2025-12-01","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-12-01_0","exercise_id":"squat","set_number":1,"weight_kg":50,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-12-05","date":"2025-12-05","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-12-05_0","exercise_id":"bench_press","set_number":1,"weight_kg":25,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-12-06","date":"2025-12-06","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-12-06_0","exercise_id":"tbar_row","set_number":1,"weight_kg":45,"weight_unit":"kg","reps":12,"rir":null,"technique":"straight","note":""},{"id":"s_2025-12-06_1","exercise_id":"sldl","set_number":2,"weight_kg":48,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-12-08","date":"2025-12-08","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-12-08_0","exercise_id":"squat","set_number":1,"weight_kg":50,"weight_unit":"kg","reps":12,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-12-12","date":"2025-12-12","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-12-12_0","exercise_id":"bench_press","set_number":1,"weight_kg":27,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-12-13","date":"2025-12-13","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-12-13_0","exercise_id":"tbar_row","set_number":1,"weight_kg":50,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""},{"id":"s_2025-12-13_1","exercise_id":"sldl","set_number":2,"weight_kg":48,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-12-15","date":"2025-12-15","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-12-15_0","exercise_id":"squat","set_number":1,"weight_kg":53,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-12-19","date":"2025-12-19","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-12-19_0","exercise_id":"bench_press","set_number":1,"weight_kg":27,"weight_unit":"kg","reps":7,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-12-20","date":"2025-12-20","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-12-20_0","exercise_id":"tbar_row","set_number":1,"weight_kg":51,"weight_unit":"kg","reps":9,"rir":null,"technique":"straight","note":""},{"id":"s_2025-12-20_1","exercise_id":"sldl","set_number":2,"weight_kg":50,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-12-22","date":"2025-12-22","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-12-22_0","exercise_id":"squat","set_number":1,"weight_kg":53,"weight_unit":"kg","reps":6,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-12-26","date":"2025-12-26","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-12-26_0","exercise_id":"bench_press","set_number":1,"weight_kg":27,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-12-27","date":"2025-12-27","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-12-27_0","exercise_id":"sldl","set_number":1,"weight_kg":50,"weight_unit":"kg","reps":5,"rir":null,"technique":"straight","note":""}]},{"id":"sess_2025-12-29","date":"2025-12-29","gym_id":"unknown","routine_id":null,"bodyweight_kg":null,"sets":[{"id":"s_2025-12-29_0","exercise_id":"squat","set_number":1,"weight_kg":53,"weight_unit":"kg","reps":8,"rir":null,"technique":"straight","note":""}]}]}';
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+let DB=null, activeSess=null, editingRoutine=null, editingSlots=[];
+const BW_EX=new Set(['weighted_dips','weighted_pullup','weighted_chinup','dips','pullup','weighted_pull_up','weighted_chin_up']);
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+function init(){
+  const s=localStorage.getItem('treinoDB_v3');
+  if(s){try{DB=JSON.parse(s)}catch(e){DB=null}}
+  if(!DB){DB=JSON.parse(SEED);saveDB()}
+  DB.gyms=DB.gyms||[];DB.exercises=DB.exercises||[];
+  DB.routines=DB.routines||[];DB.sessions=DB.sessions||[];
+  if(!DB.meta)DB.meta={version:'1.0',peso_corporal:[]};
+  if(!DB.meta.peso_corporal)DB.meta.peso_corporal=[];
+  // Migrate: mark BW exercises
+  DB.exercises.forEach(e=>{if(BW_EX.has(e.id)&&e.type!=='bw')e.type='bw'});
+  // Migrate: ensure routine_history exists
+  if(!DB.routine_history)DB.routine_history=[];
+  renderHome();
+}
+function saveDB(){localStorage.setItem('treinoDB_v3',JSON.stringify(DB))}
+
+// ══════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const today=()=>new Date().toISOString().slice(0,10);
+const fmtD=d=>{const dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'})};
+const fmtDs=d=>{const dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})};
+const getEx=id=>DB.exercises.find(e=>e.id===id);
+const getGym=id=>DB.gyms.find(g=>g.id===id);
+const getRoutine=id=>DB.routines.find(r=>r.id===id);
+const CAT_LABEL={chest:'Peito',shoulders:'Ombros',back_width:'Costas (largura)',back_thickness:'Costas (espessura)',
+  triceps:'Tríceps',biceps:'Bíceps',forearms:'Antebraço',quads:'Quadríceps',posterior:'Posterior',
+  adductors:'Adutores',abductors:'Abdutores',calves:'Panturrilha',core:'Core',olympic:'Olímpico',other:'Outro'};
+const CAT_COLOR={chest:'#3A6FD8',shoulders:'#1AA8C0',back_width:'#18A058',back_thickness:'#0E7A50',
+  triceps:'#E07820',biceps:'#C050C0',forearms:'#908030',quads:'#D63030',posterior:'#A02020',
+  adductors:'#606090',abductors:'#4090A0',calves:'#308080',core:'#707070',olympic:'#1050A0',other:'#888'};
+
+function e1rm(w,r){if(!w||!r||r<=0)return 0;if(r===1)return w;return Math.round(w*(1+r/30)*10)/10}
+function totalLoad(s,bw){
+  // For BW exercises: total load = added weight + BW
+  const ex=getEx(s.exercise_id);
+  if(ex&&ex.type==='bw'&&bw&&s.weight_unit==='kg'){return(s.weight_kg||0)+bw}
+  return s.weight_kg||0;
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════
+function goTab(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('s-'+name).classList.add('active');
+  document.querySelector(`.tab[data-s="${name}"]`).classList.add('active');
+  setTopbar({home:'Treino',progress:'Progresso',volume:'Volume Semanal',routines:'Rotinas',config:'Configurações',session:'Sessão Ativa'}[name]||'');
+  document.getElementById('tb-sub').textContent='';
+  document.getElementById('tb-right').innerHTML='';
+  if(name==='home')renderHome();
+  if(name==='progress')renderProgress();
+  if(name==='volume')renderVolume();
+  if(name==='routines')renderRoutines();
+  if(name==='config')renderConfig();
+}
+function setTopbar(title,sub='',right=''){
+  document.getElementById('tb-title').textContent=title;
+  document.getElementById('tb-sub').textContent=sub;
+  document.getElementById('tb-right').innerHTML=right;
+}
+
+// ══════════════════════════════════════════════════════════════
+// HOME
+// ══════════════════════════════════════════════════════════════
+function renderHome(){
+  const bwLog=DB.meta.peso_corporal;
+  const lastBW=bwLog.length?bwLog[bwLog.length-1]:null;
+  document.getElementById('bw-val').textContent=lastBW?`${lastBW.kg} kg`:'—';
+  document.getElementById('bw-date').textContent=lastBW?fmtD(lastBW.date):'Não registrado';
+
+  const weekAgo=new Date();weekAgo.setDate(weekAgo.getDate()-7);
+  const ws=weekAgo.toISOString().slice(0,10);
+  const wk=DB.sessions.filter(s=>s.date>=ws);
+  const sets7=wk.reduce((n,s)=>n+s.sets.length,0);
+  const days7=new Set(wk.map(s=>s.date)).size;
+  const allDays=[...new Set(DB.sessions.map(s=>s.date))].sort().reverse();
+  let streak=0;
+  for(let i=0;i<allDays.length;i++){
+    const exp=new Date(today()+'T12:00:00');exp.setDate(exp.getDate()-i);
+    if(allDays[i]===exp.toISOString().slice(0,10))streak++;else break;
+  }
+  document.getElementById('week-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-val">${days7}<span>/7</span></div><div class="stat-label">Dias treinados</div></div>
+    <div class="stat-card"><div class="stat-val">${sets7}</div><div class="stat-label">Séries (7 dias)</div></div>
+    <div class="stat-card"><div class="stat-val">${streak}</div><div class="stat-label">Dias seguidos</div></div>
+    <div class="stat-card"><div class="stat-val">${DB.sessions.length}</div><div class="stat-label">Total sessões</div></div>`;
+
+  const recent=[...DB.sessions].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  const rc=document.getElementById('recent-sessions');
+  rc.innerHTML=recent.length?recent.map(s=>{
+    const gym=getGym(s.gym_id);const r=s.routine_id?getRoutine(s.routine_id):null;
+    const exIds=[...new Set(s.sets.map(st=>st.exercise_id))];
+    const label=s.session_label||'';
+    return`<div class="card"><div class="li" style="border:none">
+      <div class="li-icon">🏋️</div>
+      <div class="li-body">
+        <div class="li-title">${r?r.name:'Treino livre'}${label?' · '+label:''}</div>
+        <div class="li-sub">${fmtD(s.date)} · ${gym?.name||s.gym_id}</div>
+        <div class="li-sub">${exIds.slice(0,3).map(id=>getEx(id)?.name||id).join(' · ')}</div>
+      </div>
+      <div class="li-right" style="font-size:.82rem;font-weight:700;color:var(--blue)">${s.sets.length} séries</div>
+    </div></div>`;
+  }).join(''):'<div class="empty">Nenhuma sessão ainda.</div>';
+}
+
+// ══════════════════════════════════════════════════════════════
+// SESSION FLOW
+// ══════════════════════════════════════════════════════════════
+function startFlow(){
+  document.getElementById('ss-gym').innerHTML=DB.gyms.map(g=>`<option value="${g.id}">${g.name}</option>`).join('');
+  document.getElementById('ss-routine').innerHTML='<option value="">— Treino livre —</option>'+DB.routines.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+  const lb=DB.meta.peso_corporal.slice(-1)[0];
+  document.getElementById('ss-bw').value=lb?lb.kg:'';
+  document.getElementById('ss-label').value='';
+  openModal('m-start');
+}
+function confirmStart(){
+  const gymId=document.getElementById('ss-gym').value;
+  const routineId=document.getElementById('ss-routine').value||null;
+  const label=document.getElementById('ss-label').value.trim();
+  const bw=parseFloat(document.getElementById('ss-bw').value)||null;
+  closeModal('m-start');
+  if(bw){DB.meta.peso_corporal.push({date:today(),kg:bw});saveDB()}
+  activeSess={id:uid(),date:today(),gymId,routineId,label,bw,sets:[],start:Date.now()};
+  renderSession();goTab('session');
+}
+
+function renderSession(){
+  const r=activeSess.routineId?getRoutine(activeSess.routineId):null;
+  const gym=getGym(activeSess.gymId);
+  const elapsed=Math.floor((Date.now()-activeSess.start)/60000);
+  setTopbar(r?.name||'Treino livre',gym?.name||'',`<button class="btn btn-sm" style="background:var(--blue);color:#fff;border-radius:8px;padding:6px 14px;font-weight:700" onclick="finishSession()">Finalizar</button>`);
+
+  // Build exercise order
+  const exOrder=[],exMap={};
+  if(r){r.slots.forEach(slot=>{
+    const exId=slot.gym_substitutes?.[activeSess.gymId]||slot.exercise_id;
+    if(!exMap[exId]){exOrder.push(exId);exMap[exId]={slot,sets:[]}}
+  })}
+  activeSess.sets.forEach(s=>{
+    if(!exMap[s.exercise_id]){exOrder.push(s.exercise_id);exMap[s.exercise_id]={slot:null,sets:[]}}
+    exMap[s.exercise_id].sets.push(s);
+  });
+
+  const isBW=exId=>{const e=getEx(exId);return e&&(e.type==='bw'||BW_EX.has(exId))};
+
+  const blocks=exOrder.map(exId=>{
+    const ex=getEx(exId);const{slot,sets}=exMap[exId];
+    const bwEx=isBW(exId);
+    const suggestion=suggestLoad(exId,activeSess.gymId,slot?.rep_range,activeSess.bw,bwEx);
+
+    const hdr=`<div class="ex-block-head">
+      <div><div class="ex-name">${ex?.name||exId}</div>
+      ${slot?`<div class="ex-target">${slot.sets}×${slot.rep_range} · ${slot.technique} · RIR ${slot.rir_target}</div>`:''}</div>
+      <span class="${bwEx?'tag-bw':ex?.type==='machine'?'tag-mach':'tag-free'}">${bwEx?'BW':ex?.type==='machine'?'máq':'livre'}</span>
+    </div>`;
+
+    const sugg=suggestion?`<div class="ex-suggestion">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01z"/></svg>
+      ${suggestion.text}
+    </div>`:'';
+
+    const colHdr=`<div class="set-grid" style="padding:2px 0 6px">
+      <div></div>
+      <div class="set-header">${bwEx?'Adicional':'Carga'}</div>
+      <div class="set-header">Unidade</div>
+      <div class="set-header">Reps</div>
+      <div class="set-header">RIR</div>
+      <div></div>
+    </div>`;
+
+    const setRows=sets.map((s,i)=>{
+      const unit=s.weight_unit||'kg';
+      return`<div class="set-row set-done set-grid">
+        <div class="set-num">✓</div>
+        <input class="set-input" type="number" step="0.5" value="${s.weight_kg||''}" placeholder="0"
+          onchange="updSet('${exId}',${i},'weight_kg',+this.value)">
+        <div class="unit-toggle">
+          <button class="unit-btn ${unit==='kg'?'active':''}" onclick="updSet('${exId}',${i},'weight_unit','kg');this.classList.add('active');this.nextSibling.classList.remove('active')">kg</button>
+          <button class="unit-btn ${unit==='pl'?'active':''}" onclick="updSet('${exId}',${i},'weight_unit','pl');this.classList.add('active');this.previousSibling.classList.remove('active')">pl</button>
+        </div>
+        <input class="set-input" type="number" value="${s.reps||''}" placeholder="0"
+          onchange="updSet('${exId}',${i},'reps',+this.value)">
+        <input class="set-input" type="number" value="${s.rir!=null?s.rir:''}" placeholder="—" min="0" max="5"
+          onchange="updSet('${exId}',${i},'rir',+this.value)">
+        <button class="btn-icon" onclick="rmSet('${exId}',${i})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>`;
+    }).join('');
+
+    const sugW=suggestion?suggestion.weight:null;
+    const sugU=suggestion?suggestion.unit:'kg';
+    return`<div class="ex-block">${hdr}${sugg}
+      <div class="ex-sets">
+        ${sets.length?colHdr+setRows:''}
+        <button class="btn btn-secondary btn-sm mt8" onclick="addSet('${exId}',${sugW},'${sugU}')">+ Série</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  const bwNote=activeSess.bw?`<div class="bw-note">⚖️ Peso corporal registrado: <strong>${activeSess.bw} kg</strong> — usado nos exercícios BW</div>`:'';
+
+  document.getElementById('session-body').innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:.78rem;color:var(--sub)">${today()} · ${elapsed}min${activeSess.label?' · '+activeSess.label:''}</div>
+      <button class="btn btn-danger btn-sm" onclick="cancelSess()">Cancelar</button>
+    </div>
+    ${bwNote}
+    ${blocks}
+    <button class="btn btn-secondary mt8" onclick="openAddExSess()">+ Exercício</button>`;
+}
+
+function suggestLoad(exId,gymId,repRange,bw,isBWEx){
+  const ex=getEx(exId);if(!ex)return null;
+  const isMachine=ex.type==='machine';
+  const isFree=ex.type==='free'||isBWEx;
+  // Find relevant sessions
+  const relevant=DB.sessions
+    .filter(s=>isFree||s.gym_id===gymId)
+    .sort((a,b)=>a.date.localeCompare(b.date));
+  let lastKg=null,lastPl=null;
+  for(const sess of relevant){
+    for(const s of sess.sets){
+      if(s.exercise_id!==exId||!s.weight_kg||!s.reps)continue;
+      if(s.weight_unit==='pl')lastPl={w:s.weight_kg,r:s.reps,date:sess.date,gym:sess.gym_id};
+      else lastKg={w:s.weight_kg,r:s.reps,date:sess.date,gym:sess.gym_id,bw:sess.bodyweight_kg};
+    }
+  }
+  const[minR,maxR]=repRange?repRange.split('-').map(Number):[6,12];
+  const target=maxR||12;
+
+  // Prefer kg if available
+  const last=lastKg||lastPl;
+  if(!last){
+    if(lastPl){return{weight:lastPl.w,unit:'pl',text:`Sugestão (pl): ${lastPl.w}pl × ${lastPl.r} — sem histórico em kg`}}
+    return null;
+  }
+  const unit=lastKg?'kg':'pl';
+  const inc=unit==='pl'?1:isBWEx?1.25:2.5;
+  const didTop=last.r>=target;
+  const sugW=didTop?last.w+inc:last.w;
+  let txt=`Sugestão: <strong>${sugW}${unit}</strong> — ${last.w}${unit}×${last.r} (${fmtDs(last.date)})`;
+  if(isBWEx&&bw){
+    const total=sugW+bw;
+    txt+=` · total ${total.toFixed(1)}kg`;
+  }
+  return{weight:sugW,unit,text:txt};
+}
+
+function addSet(exId,sugW,sugU){
+  if(!activeSess)return;
+  activeSess.sets.push({id:uid(),exercise_id:exId,weight_kg:sugW||null,weight_unit:sugU||'kg',reps:null,rir:null,technique:'straight',note:''});
+  renderSession();
+}
+function updSet(exId,idx,field,val){
+  const sets=activeSess.sets.filter(s=>s.exercise_id===exId);
+  if(sets[idx])sets[idx][field]=val;
+}
+function rmSet(exId,idx){
+  const ofEx=activeSess.sets.filter(s=>s.exercise_id===exId);
+  const target=ofEx[idx];
+  const pos=activeSess.sets.indexOf(target);
+  if(pos!==-1)activeSess.sets.splice(pos,1);
+  renderSession();
+}
+function openAddExSess(){document.getElementById('ae-search').value='';filterAE('');openModal('m-add-ex-sess')}
+function filterAE(q){
+  document.getElementById('ae-list').innerHTML=DB.exercises
+    .filter(e=>!q||e.name.toLowerCase().includes(q.toLowerCase()))
+    .map(e=>`<div class="li" style="cursor:pointer" onclick="addExSess('${e.id}');closeModal('m-add-ex-sess')">
+      <div class="li-body"><div class="li-title">${e.name}</div>
+      <div class="li-sub">${CAT_LABEL[e.category]||e.category} · <span class="${e.type==='bw'?'tag-bw':e.type==='machine'?'tag-mach':'tag-free'}">${e.type==='bw'?'BW':e.type==='machine'?'máquina':'livre'}</span></div>
+      </div></div>`).join('');
+}
+function addExSess(exId){
+  if(!activeSess)return;
+  activeSess.sets.push({id:uid(),exercise_id:exId,weight_kg:null,weight_unit:'kg',reps:null,rir:null,technique:'straight',note:''});
+  renderSession();
+}
+function finishSession(){
+  if(!activeSess)return;
+  if(!activeSess.sets.length){toast('Nenhuma série registrada.');return}
+  DB.sessions.push({id:activeSess.id,date:activeSess.date,gym_id:activeSess.gymId,
+    routine_id:activeSess.routineId,session_label:activeSess.label,
+    bodyweight_kg:activeSess.bw,sets:activeSess.sets});
+  saveDB();activeSess=null;toast('Sessão salva!');goTab('home');
+}
+function cancelSess(){if(confirm('Cancelar treino?')){activeSess=null;goTab('home')}}
+
+// ══════════════════════════════════════════════════════════════
+// PROGRESS
+// ══════════════════════════════════════════════════════════════
+function renderProgress(){filterProg('')}
+function filterProg(q){
+  const list=document.getElementById('prog-list');
+  const exWithData=DB.exercises.filter(e=>{
+    if(q&&!e.name.toLowerCase().includes(q.toLowerCase()))return false;
+    return DB.sessions.some(s=>s.sets.some(st=>st.exercise_id===e.id&&st.weight_kg!=null));
+  });
+  list.innerHTML=exWithData.map(e=>{
+    const topSets=getTopSets(e.id,null);
+    const best=topSets.length?topSets.reduce((b,t)=>e1rm(t.weight,t.r)>e1rm(b.weight,b.r)?t:b,topSets[0]):null;
+    const plateau=detectPlateau(e.id);
+    return`<div class="card" style="cursor:pointer;margin-bottom:8px" onclick="showProgDetail('${e.id}')">
+      <div class="li" style="border:none;padding:12px 13px">
+        <div class="li-icon" style="background:${e.type==='bw'?'var(--blue-lt)':e.type==='machine'?'var(--orange-lt)':'var(--teal-lt)'}">${e.type==='bw'?'⚖️':e.type==='machine'?'⚙️':'🔩'}</div>
+        <div class="li-body">
+          <div class="li-title">${e.name}</div>
+          <div class="li-sub">${CAT_LABEL[e.category]||e.category}${best?` · e1RM ${e1rm(best.weight,best.r)}kg`:''}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          ${plateau?`<div class="plateau-badge">⚠ Plateau</div>`:''}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="color:var(--muted)"><polyline points="9,18 15,12 9,6"/></svg>
+        </div>
+      </div>
+    </div>`;
+  }).join('')||'<div class="empty">Nenhum exercício com dados.</div>';
+}
+
+function getTopSets(exId,gymId){
+  const ex=getEx(exId);if(!ex)return[];
+  const isFree=ex.type!=='machine';
+  return DB.sessions
+    .filter(s=>isFree||!gymId||s.gym_id===gymId)
+    .sort((a,b)=>a.date.localeCompare(b.date))
+    .flatMap(sess=>{
+      const sets=sess.sets.filter(s=>s.exercise_id===exId&&s.weight_kg!=null&&s.reps!=null);
+      if(!sets.length)return[];
+      const top=sets.reduce((b,s)=>e1rm(s.weight_kg,s.reps)>e1rm(b.weight_kg,b.reps)?s:b,sets[0]);
+      return[{date:sess.date,gym:sess.gym_id,weight:top.weight_kg,unit:top.weight_unit||'kg',
+        r:top.reps,e1:e1rm(top.weight_kg,top.reps),bw:sess.bodyweight_kg,allSets:sets}];
+    });
+}
+
+function detectPlateau(exId){
+  const pts=getTopSets(exId,null);if(pts.length<4)return false;
+  const last4=pts.slice(-4);
+  const best=Math.max(...last4.map(p=>p.e1));
+  const first=last4[0].e1;
+  return(best-first)/Math.max(first,1)*100<3;
+}
+
+function showProgDetail(exId){
+  const ex=getEx(exId);if(!ex)return;
+  const isMachine=ex.type==='machine';
+  const isBW=ex.type==='bw'||BW_EX.has(exId);
+  document.getElementById('prog-detail').scrollIntoView({behavior:'smooth',block:'start'});
+
+  // For machines: split by gym. For free/BW: unified
+  const gymIds=isMachine?[...new Set(DB.sessions.filter(s=>s.sets.some(st=>st.exercise_id===exId)).map(s=>s.gym_id))]:['all'];
+  const colors=['#3A6FD8','#1AA8C0','#E07820','#18A058','#C050C0'];
+
+  const datasets=gymIds.map((gid,gi)=>{
+    const pts=getTopSets(exId,gid==='all'?null:gid);
+    return{label:gid==='all'?'Todos':getGym(gid)?.name||gid,color:colors[gi%colors.length],pts};
+  }).filter(d=>d.pts.length);
+
+  const allDates=[...new Set(datasets.flatMap(d=>d.pts.map(p=>p.date)))].sort();
+  const plateau=detectPlateau(exId);
+
+  // BW note
+  const bwNote=isBW?`<div class="bw-note" style="margin:8px 14px">⚖️ Exercício de peso corporal — carga adicional registrada separada do BW. e1RM calculado sobre carga total quando BW disponível.</div>`:'';
+
+  // Table
+  const allPts=datasets.flatMap(d=>d.pts.map(p=>({...p,gymLabel:d.label}))).sort((a,b)=>b.date.localeCompare(a.date));
+  const maxE1=Math.max(...allPts.map(p=>p.e1||0));
+
+  const tableRows=allPts.slice(0,25).map(p=>{
+    const isTop=p.e1===maxE1;
+    const bwPart=isBW&&p.bw?` (+${p.bw}kg BW)`:'';
+    return`<tr>
+      <td>${fmtDs(p.date)}</td>
+      ${isMachine?`<td style="font-size:.72rem;color:var(--muted)">${p.gymLabel}</td>`:''}
+      <td class="${isTop?'hi font-mono':'font-mono'}">${p.weight}${p.unit}</td>
+      <td class="font-mono">${p.r}${bwPart}</td>
+      <td class="font-mono" style="color:var(--blue)">${p.e1||'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const chartId='chart-'+exId;
+  document.getElementById('prog-detail').innerHTML=`
+    <div style="padding:14px 14px 0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <h2>${ex.name}</h2>
+        <button class="btn-icon" onclick="document.getElementById('prog-detail').innerHTML=''">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+        <span class="badge ${isBW?'badge-blue':isMachine?'badge-orange':'badge-teal'}">${isBW?'PESO CORPORAL':isMachine?'MÁQUINA':'LIVRE'}</span>
+        <span class="badge badge-muted">${CAT_LABEL[ex.category]||ex.category}</span>
+        ${isMachine?'<span class="badge badge-muted">Por academia</span>':'<span class="badge badge-green">Progressão unificada</span>'}
+        ${plateau?'<div class="plateau-badge">⚠ Plateau detectado</div>':''}
+      </div>
+    </div>
+    ${bwNote}
+    <div class="prog-chart-wrap" style="margin:0 14px 10px">
+      <canvas id="${chartId}" height="180"></canvas>
+      <div class="chart-legend">${datasets.map(d=>`<div class="legend-item"><div class="legend-dot" style="background:${d.color}"></div>${d.label}</div>`).join('')}</div>
+    </div>
+    <div style="padding:0 14px 20px">
+      <table class="prog-table">
+        <thead><tr><th>Data</th>${isMachine?'<th>Local</th>':''}<th>Carga</th><th>Reps</th><th>e1RM</th></tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>`;
+
+  setTimeout(()=>drawChart(chartId,allDates,datasets),50);
+}
+
+function drawChart(id,allDates,datasets){
+  const canvas=document.getElementById(id);if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.clientWidth,H=180;
+  canvas.width=W*devicePixelRatio;canvas.height=H*devicePixelRatio;
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  const PAD={top:12,right:16,bottom:32,left:48};
+  const cw=W-PAD.left-PAD.right,ch=H-PAD.top-PAD.bottom;
+  const allE1=datasets.flatMap(d=>d.pts.map(p=>p.e1||p.weight)).filter(Boolean);
+  if(!allE1.length)return;
+  const minV=Math.min(...allE1)*.9,maxV=Math.max(...allE1)*1.08;
+  const n=allDates.length;
+  const xOf=i=>PAD.left+(i/Math.max(n-1,1))*cw;
+  const yOf=v=>PAD.top+ch-((v-minV)/(maxV-minV))*ch;
+  const dateIdx=Object.fromEntries(allDates.map((d,i)=>[d,i]));
+
+  // BG
+  ctx.fillStyle='#F7F9FC';ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#DDE3ED';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=PAD.top+(i/4)*ch;
+    ctx.beginPath();ctx.moveTo(PAD.left,y);ctx.lineTo(W-PAD.right,y);ctx.stroke();
+    ctx.fillStyle='#8A9BB8';ctx.font='9px -apple-system';ctx.textAlign='right';
+    ctx.fillText(Math.round(maxV-(i/4)*(maxV-minV)),PAD.left-4,y+4);
+  }
+  const step=Math.max(1,Math.floor(n/5));
+  for(let i=0;i<n;i+=step){
+    ctx.fillStyle='#8A9BB8';ctx.font='9px -apple-system';ctx.textAlign='center';
+    ctx.fillText(fmtDs(allDates[i]),xOf(i),H-PAD.bottom+14);
+  }
+  datasets.forEach(ds=>{
+    const pts=ds.pts.map(p=>({x:xOf(dateIdx[p.date]),y:yOf(p.e1||p.weight)}));
+    if(!pts.length)return;
+    const grad=ctx.createLinearGradient(0,PAD.top,0,PAD.top+ch);
+    grad.addColorStop(0,ds.color+'30');grad.addColorStop(1,ds.color+'00');
+    ctx.beginPath();ctx.moveTo(pts[0].x,PAD.top+ch);
+    pts.forEach(p=>ctx.lineTo(p.x,p.y));ctx.lineTo(pts[pts.length-1].x,PAD.top+ch);
+    ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+    ctx.beginPath();ctx.strokeStyle=ds.color;ctx.lineWidth=2.5;ctx.lineJoin='round';
+    pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.stroke();
+    pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fillStyle=ds.color;ctx.fill()});
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// VOLUME DASHBOARD
+// ══════════════════════════════════════════════════════════════
+function renderVolume(){
+  // Build weekly volume by category for last 12 weeks
+  const weeks=[];
+  for(let i=11;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i*7);
+    const mon=new Date(d);mon.setDate(d.getDate()-d.getDay()+1);
+    weeks.push(mon.toISOString().slice(0,10));
+  }
+
+  const weekData=weeks.map(wStart=>{
+    const wEnd=new Date(wStart+'T00:00:00');wEnd.setDate(wEnd.getDate()+6);
+    const wEndStr=wEnd.toISOString().slice(0,10);
+    const sessSets=DB.sessions.filter(s=>s.date>=wStart&&s.date<=wEndStr)
+      .flatMap(s=>s.sets.filter(st=>st.weight_kg&&st.reps&&st.weight_unit!=='pl'));
+    const bycat={};
+    sessSets.forEach(s=>{
+      const cat=getEx(s.exercise_id)?.category||'other';
+      bycat[cat]=(bycat[cat]||0)+s.weight_kg*s.reps;
+    });
+    const total=Object.values(bycat).reduce((a,b)=>a+b,0);
+    return{week:wStart,bycat,total,sessions:new Set(DB.sessions.filter(s=>s.date>=wStart&&s.date<=wEndStr).map(s=>s.date)).size};
+  });
+
+  // Total volume by category overall (last 12 weeks)
+  const catTotal={};
+  weekData.forEach(w=>Object.entries(w.bycat).forEach(([c,v])=>catTotal[c]=(catTotal[c]||0)+v));
+  const grandTotal=Object.values(catTotal).reduce((a,b)=>a+b,0);
+  const sortedCats=Object.entries(catTotal).sort((a,b)=>b[1]-a[1]).map(e=>e[0]);
+
+  // Weekly sessions chart
+  const maxSess=Math.max(...weekData.map(w=>w.sessions),1);
+  const maxVol=Math.max(...weekData.map(w=>w.total),1);
+
+  const chartId='vol-chart';
+  const barChartId='sess-chart';
+
+  // Category breakdown
+  const catBars=sortedCats.map(cat=>{
+    const vol=catTotal[cat];
+    const pct=grandTotal?Math.round(vol/grandTotal*100):0;
+    const color=CAT_COLOR[cat]||'#888';
+    return`<div class="vol-bar-row">
+      <div class="vol-bar-label">${CAT_LABEL[cat]||cat}</div>
+      <div class="vol-bar-wrap"><div class="vol-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="vol-bar-val">${pct}%</div>
+    </div>`;
+  }).join('');
+
+  // Week labels
+  const wLabels=weeks.map(w=>{const d=new Date(w+'T12:00:00');return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})});
+
+  document.getElementById('vol-body').innerHTML=`
+    <div class="section-label">Volume por Grupo Muscular (últimas 12 semanas)</div>
+    <div class="card"><div class="card-body">${catBars||'<div class="empty">Sem dados</div>'}</div></div>
+
+    <div class="section-label">Volume Semanal Total (kg×reps)</div>
+    <div class="prog-chart-wrap">
+      <canvas id="${chartId}" height="160"></canvas>
+    </div>
+
+    <div class="section-label">Sessões por Semana</div>
+    <div class="prog-chart-wrap">
+      <canvas id="${barChartId}" height="120"></canvas>
+    </div>
+
+    <div class="section-label">Detalhe por Semana</div>
+    <div class="card">
+      <table class="prog-table">
+        <thead><tr><th>Semana</th><th>Sessões</th><th>Volume (kg·reps)</th><th>Top categoria</th></tr></thead>
+        <tbody>${weekData.map(w=>{
+          const topCat=Object.entries(w.bycat).sort((a,b)=>b[1]-a[1])[0];
+          return`<tr>
+            <td>${fmtDs(w.week)}</td>
+            <td class="font-mono">${w.sessions}</td>
+            <td class="font-mono">${Math.round(w.total/1000)}k</td>
+            <td style="font-size:.78rem">${topCat?CAT_LABEL[topCat[0]]||topCat[0]:'—'}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>`;
+
+  setTimeout(()=>{
+    // Volume line chart
+    drawLineChart(chartId,wLabels,weekData.map(w=>Math.round(w.total/100)/10),{color:'#3A6FD8',label:'Volume (k kg·reps)'});
+    // Sessions bar chart
+    drawBarChart(barChartId,wLabels,weekData.map(w=>w.sessions),{color:'#1AA8C0'});
+  },50);
+}
+
+function drawLineChart(id,labels,values,opts={}){
+  const canvas=document.getElementById(id);if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.clientWidth,H=parseInt(canvas.getAttribute('height'))||160;
+  canvas.width=W*devicePixelRatio;canvas.height=H*devicePixelRatio;
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  const PAD={top:12,right:12,bottom:30,left:44};
+  const cw=W-PAD.left-PAD.right,ch=H-PAD.top-PAD.bottom;
+  const n=values.length;
+  const minV=0,maxV=Math.max(...values,1)*1.15;
+  const xOf=i=>PAD.left+(i/(n-1||1))*cw;
+  const yOf=v=>PAD.top+ch-((v-minV)/(maxV-minV||1))*ch;
+  ctx.fillStyle='#F7F9FC';ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#DDE3ED';ctx.lineWidth=1;
+  for(let i=0;i<=3;i++){
+    const y=PAD.top+(i/3)*ch;
+    ctx.beginPath();ctx.moveTo(PAD.left,y);ctx.lineTo(W-PAD.right,y);ctx.stroke();
+    ctx.fillStyle='#8A9BB8';ctx.font='9px -apple-system';ctx.textAlign='right';
+    ctx.fillText((maxV-(i/3)*maxV).toFixed(1),PAD.left-3,y+3);
+  }
+  const step=Math.max(1,Math.floor(n/6));
+  labels.forEach((l,i)=>{if(i%step===0){ctx.fillStyle='#8A9BB8';ctx.font='9px -apple-system';ctx.textAlign='center';ctx.fillText(l,xOf(i),H-PAD.bottom+14)}});
+  const pts=values.map((v,i)=>({x:xOf(i),y:yOf(v)}));
+  const color=opts.color||'#3A6FD8';
+  const grad=ctx.createLinearGradient(0,PAD.top,0,PAD.top+ch);
+  grad.addColorStop(0,color+'30');grad.addColorStop(1,color+'00');
+  ctx.beginPath();ctx.moveTo(pts[0].x,PAD.top+ch);
+  pts.forEach(p=>ctx.lineTo(p.x,p.y));ctx.lineTo(pts[n-1].x,PAD.top+ch);
+  ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+  ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';
+  pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.stroke();
+  pts.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fillStyle=color;ctx.fill()});
+}
+
+function drawBarChart(id,labels,values,opts={}){
+  const canvas=document.getElementById(id);if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.clientWidth,H=parseInt(canvas.getAttribute('height'))||120;
+  canvas.width=W*devicePixelRatio;canvas.height=H*devicePixelRatio;
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  const PAD={top:10,right:12,bottom:28,left:30};
+  const cw=W-PAD.left-PAD.right,ch=H-PAD.top-PAD.bottom;
+  const n=values.length,maxV=Math.max(...values,1)*1.2;
+  const bw=cw/n*.7,gap=cw/n;
+  ctx.fillStyle='#F7F9FC';ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#DDE3ED';ctx.lineWidth=1;
+  [0,Math.round(maxV/2),Math.round(maxV)].forEach(v=>{
+    const y=PAD.top+ch-(v/maxV)*ch;
+    ctx.beginPath();ctx.moveTo(PAD.left,y);ctx.lineTo(W-PAD.right,y);ctx.stroke();
+    ctx.fillStyle='#8A9BB8';ctx.font='9px -apple-system';ctx.textAlign='right';
+    ctx.fillText(v,PAD.left-3,y+3);
+  });
+  const color=opts.color||'#3A6FD8';
+  const step=Math.max(1,Math.floor(n/6));
+  values.forEach((v,i)=>{
+    const x=PAD.left+i*gap+(gap-bw)/2;
+    const h=(v/maxV)*ch;
+    const y=PAD.top+ch-h;
+    ctx.fillStyle=color+'CC';
+    ctx.beginPath();ctx.roundRect(x,y,bw,h,3);ctx.fill();
+    if(i%step===0){ctx.fillStyle='#8A9BB8';ctx.font='9px -apple-system';ctx.textAlign='center';ctx.fillText(labels[i],x+bw/2,H-PAD.bottom+14)}
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// ROUTINES + HISTORY
+// ══════════════════════════════════════════════════════════════
+function renderRoutines(){
+  // Routine history
+  const history=DB.routine_history||[];
+  const histSection=document.getElementById('routine-history-section');
+  if(history.length){
+    histSection.innerHTML=`<div class="section-label">Histórico de Rotinas</div>
+    <div>${history.slice().reverse().map((h,i)=>`
+      <div class="timeline-item">
+        <div class="tl-dot">${history.length-i}</div>
+        <div class="tl-body">
+          <div class="tl-title">${h.name}</div>
+          <div class="tl-sub">${fmtDs(h.active_from)} → ${h.active_to?fmtDs(h.active_to):'atual'} · ${h.slots?.length||0} exercícios</div>
+          <div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:4px">
+            ${(h.slots||[]).map(s=>`<span class="routine-period">${getEx(s.exercise_id)?.name||s.exercise_id}</span>`).join('')}
+          </div>
+        </div>
+      </div>`).join('')}
+    </div>`;
+  }else{histSection.innerHTML=''}
+
+  const list=document.getElementById('routines-list');
+  if(!DB.routines.length){list.innerHTML='<div class="empty">Nenhuma rotina ainda.</div>';return}
+  list.innerHTML=DB.routines.map(r=>`
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-header">
+        <h2>${r.name}</h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="editRoutine('${r.id}')">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="delRoutine('${r.id}')">Excluir</button>
+        </div>
+      </div>
+      ${(r.slots||[]).map((s,i)=>{
+        const ex=getEx(s.exercise_id);
+        const bwEx=ex?.type==='bw'||BW_EX.has(s.exercise_id);
+        return`<div class="li">
+          <div class="li-icon" style="font-size:.8rem;font-weight:800;color:var(--muted)">${i+1}</div>
+          <div class="li-body">
+            <div class="li-title">${ex?.name||s.exercise_id}</div>
+            <div class="li-sub">${s.sets}×${s.rep_range} · ${s.technique} · RIR ${s.rir_target}${bwEx?' · BW':''}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+}
+
+function newRoutine(){
+  editingRoutine=null;editingSlots=[];
+  document.getElementById('nr-name').value='';
+  document.getElementById('nrm-title').textContent='Nova Rotina';
+  document.getElementById('nr-slots').innerHTML='';
+  openModal('m-new-routine');
+}
+function editRoutine(id){
+  const r=getRoutine(id);editingRoutine=id;editingSlots=JSON.parse(JSON.stringify(r.slots||[]));
+  document.getElementById('nr-name').value=r.name;
+  document.getElementById('nrm-title').textContent='Editar Rotina';
+  renderSlots();openModal('m-new-routine');
+}
+function renderSlots(){
+  document.getElementById('nr-slots').innerHTML=editingSlots.map((s,i)=>{
+    const ex=getEx(s.exercise_id);
+    return`<div class="card" style="padding:10px 12px;display:flex;align-items:center;gap:10px">
+      <div style="flex:1"><div style="font-weight:700;font-size:.88rem">${ex?.name||s.exercise_id}</div>
+      <div style="font-size:.75rem;color:var(--sub)">${s.sets}×${s.rep_range} · ${s.technique} · RIR ${s.rir_target}</div></div>
+      <button class="btn-icon" onclick="editingSlots.splice(${i},1);renderSlots()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+function openAddSlot(){
+  document.getElementById('slot-ex').innerHTML=DB.exercises.map(e=>`<option value="${e.id}">${e.name}</option>`).join('');
+  document.getElementById('slot-sets').value=3;document.getElementById('slot-reps').value='6-10';document.getElementById('slot-rir').value=1;
+  document.querySelectorAll('#slot-tech .tech-btn').forEach(b=>{b.classList.remove('active');if(b.dataset.t==='straight')b.classList.add('active')});
+  document.getElementById('slot-gym-subs').innerHTML=DB.gyms.map(g=>`
+    <div class="form-row"><div class="form-group flex1"><label style="font-size:.72rem">${g.name}</label>
+    <select data-gym="${g.id}"><option value="">— Padrão —</option>
+    ${DB.exercises.map(e=>`<option value="${e.id}">${e.name}</option>`).join('')}</select></div></div>`).join('');
+  openModal('m-add-slot');
+}
+function saveSlot(){
+  const exId=document.getElementById('slot-ex').value;
+  const sets=+document.getElementById('slot-sets').value;
+  const reps=document.getElementById('slot-reps').value;
+  const rir=+document.getElementById('slot-rir').value;
+  const tech=document.querySelector('#slot-tech .tech-btn.active')?.dataset.t||'straight';
+  const subs={};
+  document.querySelectorAll('#slot-gym-subs select').forEach(sel=>{if(sel.value)subs[sel.dataset.gym]=sel.value});
+  editingSlots.push({exercise_id:exId,sets,rep_range:reps,technique:tech,rir_target:rir,gym_substitutes:subs});
+  renderSlots();closeModal('m-add-slot');
+}
+function saveRoutine(){
+  const name=document.getElementById('nr-name').value.trim();
+  if(!name){toast('Nome obrigatório');return}
+  if(editingRoutine){
+    const r=getRoutine(editingRoutine);
+    // Save to history before overwriting
+    if(!DB.routine_history)DB.routine_history=[];
+    const existing=DB.routine_history.find(h=>h.routine_id===editingRoutine&&!h.active_to);
+    if(existing)existing.active_to=today();
+    DB.routine_history.push({routine_id:editingRoutine,name,slots:JSON.parse(JSON.stringify(editingSlots)),active_from:today(),active_to:null});
+    r.name=name;r.slots=editingSlots;
+  }else{
+    const id=uid();
+    DB.routines.push({id,name,slots:editingSlots});
+    if(!DB.routine_history)DB.routine_history=[];
+    DB.routine_history.push({routine_id:id,name,slots:JSON.parse(JSON.stringify(editingSlots)),active_from:today(),active_to:null});
+  }
+  saveDB();closeModal('m-new-routine');renderRoutines();toast('Rotina salva!');
+}
+function delRoutine(id){
+  if(!confirm('Excluir rotina?'))return;
+  const r=getRoutine(id);
+  if(r&&DB.routine_history){
+    const h=DB.routine_history.find(h=>h.routine_id===id&&!h.active_to);
+    if(h)h.active_to=today();
+  }
+  DB.routines=DB.routines.filter(r=>r.id!==id);
+  saveDB();renderRoutines();
+}
+
+// ══════════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════════
+function renderConfig(){
+  document.getElementById('gyms-list').innerHTML=DB.gyms.map(g=>`
+    <div class="li"><div class="li-body"><div class="li-title">${g.name}</div></div>
+    ${g.id!=='unknown'?`<button class="btn-icon" onclick="delGym('${g.id}')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/></svg>
+    </button>`:''}
+    </div>`).join('');
+  document.getElementById('ex-catalog-list').innerHTML=DB.exercises.map(e=>`
+    <div class="li"><div class="li-body">
+      <div class="li-title">${e.name}</div>
+      <div class="li-sub">${CAT_LABEL[e.category]||e.category} · <span class="${e.type==='bw'?'tag-bw':e.type==='machine'?'tag-mach':'tag-free'}">${e.type==='bw'?'BW':e.type==='machine'?'máquina':'livre'}</span></div>
+    </div></div>`).join('');
+}
+function saveGym(){
+  const n=document.getElementById('ng-name').value.trim();if(!n)return;
+  DB.gyms.push({id:n.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'')+'_'+Date.now().toString(36),name:n});
+  saveDB();closeModal('m-add-gym');renderConfig();toast('Academia adicionada!');
+}
+function delGym(id){if(!confirm('Remover?'))return;DB.gyms=DB.gyms.filter(g=>g.id!==id);saveDB();renderConfig()}
+function saveEx(){
+  const n=document.getElementById('ne-name').value.trim();if(!n){toast('Nome obrigatório');return}
+  const cat=document.getElementById('ne-cat').value;
+  const type=document.querySelector('#ne-type .tech-btn.active')?.dataset.t||'free';
+  DB.exercises.push({id:n.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'')+'_'+Date.now().toString(36),name:n,category:cat,type});
+  saveDB();closeModal('m-add-ex');renderConfig();toast('Exercício adicionado!');
+}
+
+// ══════════════════════════════════════════════════════════════
+// BW
+// ══════════════════════════════════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function saveBW(){
+  const kg=parseFloat(document.getElementById('bw-inp').value);
+  if(!kg){toast('Peso inválido');return}
+  DB.meta.peso_corporal.push({date:today(),kg});saveDB();closeModal('m-bw');renderHome();toast('Peso registrado!');
+}
+
+// ══════════════════════════════════════════════════════════════
+// IMPORT / EXPORT
+// ══════════════════════════════════════════════════════════════
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='treino.json';a.click();URL.revokeObjectURL(url);toast('Exportado!');
+}
+function importJSON(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{const p=JSON.parse(ev.target.result);if(!p.sessions||!p.exercises)throw new Error('Formato inválido');
+    DB=p;saveDB();renderConfig();renderHome();toast('Importado!');}
+    catch(err){toast('Erro: '+err.message)}
+  };r.readAsText(f);
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODAL BACKDROP
+// ══════════════════════════════════════════════════════════════
+document.querySelectorAll('.modal-backdrop').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')})
+});
+
+function selTech(el,rowId){
+  document.querySelectorAll(`#${rowId} .tech-btn`).forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// BOOT
+init();
+</script>
+</body>
+</html>
